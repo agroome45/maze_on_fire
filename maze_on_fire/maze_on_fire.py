@@ -151,46 +151,60 @@ def Astar(matrix, start_location, end_location, dim):
                         inFringe.append([x, y-1])
                         node = Node([x+1, y], currentNode)
         closed.append([current])
-    print("there lies no path to the goal node.")
     return False
 
 def Astar2(matrix, start_location, end_location, dim) :
+    roundCounter = 0
     fringe = []
+    inFringe = []
     closed = []
+    path = []
     startNode = Node(start_location, 0, 0)
     fringe.append(startNode)
+    inFringe.append([startNode.position[0], startNode.position[1]])
     while( fringe ) :
-        print(fringe, "fringe")
+        roundCounter = roundCounter + 1
         currentNode = fringe.pop(0)
-        print(currentNode, "current")
+        inFringe.remove([currentNode.position[0], currentNode.position[1]])
         x = currentNode.position[0]
         y = currentNode.position[1]
         if matrix[x][y] == 'G' :
-            return True
+            while( not(currentNode == startNode) ) :
+                path.append(currentNode.position)
+                currentNode = currentNode.prev
+            path.append(startNode.position)
+            path.reverse()
+            print(roundCounter, "rounds of A* were performed.")
+            print("Shortest path is: " , path)
+            return
         else :
             if ((x+1) >= 0 and (x+1) < dim) :
                 if(matrix[x+1][y] == "O" or matrix[x+1][y] == "G"):
-                    if(closed.count([x+1,y]) == 0) : #TODO might still need to check if the node is already in the fringe!
+                    if(closed.count([x+1,y]) == 0) and (inFringe.count([x+1, y]) == 0) :
                         node = Node([x+1, y], currentNode.distance + 1 + euclideanDistance([x+1,y], end_location), currentNode.distance + 1,  currentNode)
                         fringe = sortedInsert2(fringe, node)
+                        inFringe.append([x+1, y])
             if ((x-1) >= 0 and (x-1) < dim) :
                 if(matrix[x-1][y] == "O" or matrix[x-1][y] == "G"):
-                    if(closed.count([x-1,y]) == 0) :                           
+                    if(closed.count([x-1,y]) == 0) and (inFringe.count([x-1, y]) == 0) :                           
                         node = Node([x-1, y], currentNode.distance + 1 + euclideanDistance([x-1,y], end_location), currentNode.distance + 1,  currentNode)
                         fringe = sortedInsert2(fringe, node)
+                        inFringe.append([x-1,y])
             if ((y+1) >= 0 and (y+1) < dim) :
                 if(matrix[x][y+1] == "O" or matrix[x][y+1] == "G"):
-                    if(closed.count([x,y+1]) == 0) :
+                    if(closed.count([x,y+1]) == 0) and (inFringe.count([x,y+1]) == 0) :
                         node = Node([x, y+1], currentNode.distance + 1 + euclideanDistance([x,y+1], end_location), currentNode.distance + 1,  currentNode)
                         fringe = sortedInsert2(fringe, node)
+                        inFringe.append([x,y+1])
             if ((y-1) >= 0 and (y-1) < dim) :
                 if(matrix[x][y-1] == "O" or matrix[x][y-1] == "G"):
-                    if(closed.count([x,y-1]) == 0) :
+                    if(closed.count([x,y-1]) == 0) and (inFringe.count([x,y+1]) == 0):
                         node = Node([x, y-1], currentNode.distance + 1 + euclideanDistance([x,y-1], end_location), currentNode.distance + 1,  currentNode)
                         fringe = sortedInsert2(fringe, node)
+                        inFringe.append([x,y-1])
         closed.append([currentNode.position[0], currentNode.position[1]])
-    print("there lies no path to the goal node.")
-    return False
+    print("there lies no path to the goal node. " , roundCounter, " rounds of A* were performed.")
+    return
 
 
 def sortedInsert(Alist, item) : #Helper function for Astar. 
@@ -230,4 +244,5 @@ if __name__ == "__main__" :
     print(BFS(maze, [0,0], [dim-1,dim-1], dim))
     print()
     print("Astar which determines the shortest path from S to G")
-    print(Astar2(maze, [0,0], [dim-1, dim-1], dim))
+    print()
+    Astar2(maze, [0,0], [dim-1, dim-1], dim)
