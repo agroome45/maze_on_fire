@@ -98,14 +98,25 @@ def BFS(matrix, start_location, end_location, dim): # Uses DFS to determine if o
             closed.append(current)  #puts current state in closed after generating valid children
     return False  
 
+class Node:
+    def __init__(self, data, prev=None) :
+        self.data = data
+        self.prev = prev
+
 def Astar(matrix, start_location, end_location, dim):
-    fringe = []
+    fringe = [] #ITEMS: [0] x-coordinate [1] y-coordinate [2] euclidean distance heuristic [3] actual distance from start point [4] parent position
     closed = []
+    inFringe = []
+    traceback = []
+    startNode = Node(start_location)
+    start_location.append(0) #placeholder for euclidean heuristic
+    start_location.append(0) #distance from start point to start point
     fringe.append(start_location)
-    distance = 0
+    inFringe.append([start_location[0], start_location[1]])
     while( fringe ):
         print(fringe, "Fringe")
         current = fringe.pop(0)
+        inFringe.remove([current[0], current[1]])
         print(current, "current")
         x = current[0]
         y = current[1]
@@ -114,29 +125,34 @@ def Astar(matrix, start_location, end_location, dim):
         else :
             if ((x+1) >= 0 and (x+1) < dim) :
                 if(matrix[x+1][y] == "O" or matrix[x+1][y] == "G"):
-                    if(closed.count([x+1,y]) == 0 and fringe.count([x+1,y]) == 0) :
-                        fringe = sortedInsert(fringe, [x+1, y, distance + euclideanDistance([x+1, y] , end_location)])
+                    if(closed.count([x+1,y]) == 0 and inFringe.count([x+1,y]) == 0) :
+                        fringe = sortedInsert(fringe, [x+1, y, current[3] + 1 + euclideanDistance([x+1, y] , end_location) , current[3] + 1] , )
+                        inFringe.append([x+1, y])
+                        
             if ((x-1) >= 0 and (x-1) < dim) :
                 if(matrix[x-1][y] == "O" or matrix[x-1][y] == "G"):
-                    if(closed.count([x-1,y]) == 0 and fringe.count([x-1,y]) == 0) :
-                        fringe = sortedInsert(fringe, [x-1, y, distance + euclideanDistance([x-1, y] , end_location)])                        
+                    if(closed.count([x-1,y]) == 0 and inFringe.count([x-1,y]) == 0) :
+                        fringe = sortedInsert(fringe, [x-1, y, current[3] + 1 + euclideanDistance([x-1, y] , end_location) , current[3] + 1])
+                        inFringe.append([x-1, y])                        
             if ((y+1) >= 0 and (y+1) < dim) :
                 if(matrix[x][y+1] == "O" or matrix[x][y+1] == "G"):
-                    if(closed.count([x,y+1]) == 0 and fringe.count([x,y+1]) == 0) :
-                        fringe = sortedInsert(fringe, [x, y+1, distance + euclideanDistance([x, y+1] , end_location)])
+                    if(closed.count([x,y+1]) == 0 and inFringe.count([x,y+1]) == 0) :
+                        fringe = sortedInsert(fringe, [x, y+1, current[3] + 1 + euclideanDistance([x, y+1] , end_location) , current[3] + 1])
+                        inFringe.append([x, y+1])
             if ((y-1) >= 0 and (y-1) < dim) :
                 if(matrix[x][y-1] == "O" or matrix[x][y-1] == "G"):
-                    if(closed.count([x,y-1]) == 0 and fringe.count([x,y-1]) == 0) :
-                        fringe = sortedInsert(fringe, [x, y-1, distance + euclideanDistance([x, y-1] , end_location)])
-        distance = distance + 1
+                    if(closed.count([x,y-1]) == 0 and inFringe.count([x,y-1]) == 0) :
+                        fringe = sortedInsert(fringe, [x, y-1, current[3] + 1 + euclideanDistance([x, y-1] , end_location) , current[3] + 1])
+                        inFringe.append([x, y-1])
         closed.append([current])
+    print("there lies no path to the goal node.")
     return False
     #TODO add inFringe list to assure no duplicates are placed in the fringe.
 
 def sortedInsert(Alist, item) : #Helper function for Astar. 
 
     for i in range(len(Alist)) :
-        if Alist[i][2] >= item[2] : #[2] is the distance from the start_location.
+        if Alist[i][2] > item[2] : #[2] is the distance from the start_location.
             retList = Alist[:i] + [item] + Alist[i:] 
             return retList
     Alist.append(item)
@@ -159,5 +175,6 @@ if __name__ == "__main__" :
     print()
     print("BFS which determines if G can be reached from S")
     print(BFS(maze, [0,0], [dim-1,dim-1], dim))
+    print()
     print("Astar which determines the shortest path from S to G")
     print(Astar(maze, [0,0], [dim-1, dim-1], dim))
