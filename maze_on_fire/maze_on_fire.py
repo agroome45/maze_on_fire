@@ -99,8 +99,10 @@ def BFS(matrix, start_location, end_location, dim): # Uses DFS to determine if o
     return False  
 
 class Node:
-    def __init__(self, data, prev=None) :
-        self.data = data
+    def __init__(self, position, heuristic, distance, prev=None) :
+        self.position = position
+        self.heuristic = heuristic
+        self.distance = distance
         self.prev = prev
 
 def Astar(matrix, start_location, end_location, dim):
@@ -118,6 +120,7 @@ def Astar(matrix, start_location, end_location, dim):
         current = fringe.pop(0)
         inFringe.remove([current[0], current[1]])
         print(current, "current")
+        currentNode = Node([current[0], current[1]] , )
         x = current[0]
         y = current[1]
         if matrix[x][y] == 'G' :
@@ -128,31 +131,81 @@ def Astar(matrix, start_location, end_location, dim):
                     if(closed.count([x+1,y]) == 0 and inFringe.count([x+1,y]) == 0) :
                         fringe = sortedInsert(fringe, [x+1, y, current[3] + 1 + euclideanDistance([x+1, y] , end_location) , current[3] + 1] , )
                         inFringe.append([x+1, y])
-                        
+                        node = Node([x+1, y], currentNode)
             if ((x-1) >= 0 and (x-1) < dim) :
                 if(matrix[x-1][y] == "O" or matrix[x-1][y] == "G"):
                     if(closed.count([x-1,y]) == 0 and inFringe.count([x-1,y]) == 0) :
                         fringe = sortedInsert(fringe, [x-1, y, current[3] + 1 + euclideanDistance([x-1, y] , end_location) , current[3] + 1])
-                        inFringe.append([x-1, y])                        
+                        inFringe.append([x-1, y])
+                        node = Node([x+1, y], currentNode)                        
             if ((y+1) >= 0 and (y+1) < dim) :
                 if(matrix[x][y+1] == "O" or matrix[x][y+1] == "G"):
                     if(closed.count([x,y+1]) == 0 and inFringe.count([x,y+1]) == 0) :
                         fringe = sortedInsert(fringe, [x, y+1, current[3] + 1 + euclideanDistance([x, y+1] , end_location) , current[3] + 1])
                         inFringe.append([x, y+1])
+                        node = Node([x+1, y], currentNode)
             if ((y-1) >= 0 and (y-1) < dim) :
                 if(matrix[x][y-1] == "O" or matrix[x][y-1] == "G"):
                     if(closed.count([x,y-1]) == 0 and inFringe.count([x,y-1]) == 0) :
                         fringe = sortedInsert(fringe, [x, y-1, current[3] + 1 + euclideanDistance([x, y-1] , end_location) , current[3] + 1])
                         inFringe.append([x, y-1])
+                        node = Node([x+1, y], currentNode)
         closed.append([current])
     print("there lies no path to the goal node.")
     return False
-    #TODO add inFringe list to assure no duplicates are placed in the fringe.
+
+def Astar2(matrix, start_location, end_location, dim) :
+    fringe = []
+    closed = []
+    startNode = Node(start_location, 0, 0)
+    fringe.append(startNode)
+    while( fringe ) :
+        print(fringe, "fringe")
+        currentNode = fringe.pop(0)
+        print(currentNode, "current")
+        x = currentNode.position[0]
+        y = currentNode.position[1]
+        if matrix[x][y] == 'G' :
+            return True
+        else :
+            if ((x+1) >= 0 and (x+1) < dim) :
+                if(matrix[x+1][y] == "O" or matrix[x+1][y] == "G"):
+                    if(closed.count([x+1,y]) == 0) : #TODO might still need to check if the node is already in the fringe!
+                        node = Node([x+1, y], currentNode.distance + 1 + euclideanDistance([x+1,y], end_location), currentNode.distance + 1,  currentNode)
+                        fringe = sortedInsert2(fringe, node)
+            if ((x-1) >= 0 and (x-1) < dim) :
+                if(matrix[x-1][y] == "O" or matrix[x-1][y] == "G"):
+                    if(closed.count([x-1,y]) == 0) :                           
+                        node = Node([x-1, y], currentNode.distance + 1 + euclideanDistance([x-1,y], end_location), currentNode.distance + 1,  currentNode)
+                        fringe = sortedInsert2(fringe, node)
+            if ((y+1) >= 0 and (y+1) < dim) :
+                if(matrix[x][y+1] == "O" or matrix[x][y+1] == "G"):
+                    if(closed.count([x,y+1]) == 0) :
+                        node = Node([x, y+1], currentNode.distance + 1 + euclideanDistance([x,y+1], end_location), currentNode.distance + 1,  currentNode)
+                        fringe = sortedInsert2(fringe, node)
+            if ((y-1) >= 0 and (y-1) < dim) :
+                if(matrix[x][y-1] == "O" or matrix[x][y-1] == "G"):
+                    if(closed.count([x,y-1]) == 0) :
+                        node = Node([x, y-1], currentNode.distance + 1 + euclideanDistance([x,y-1], end_location), currentNode.distance + 1,  currentNode)
+                        fringe = sortedInsert2(fringe, node)
+        closed.append([currentNode.position[0], currentNode.position[1]])
+    print("there lies no path to the goal node.")
+    return False
+
 
 def sortedInsert(Alist, item) : #Helper function for Astar. 
 
     for i in range(len(Alist)) :
         if Alist[i][2] > item[2] : #[2] is the distance from the start_location.
+            retList = Alist[:i] + [item] + Alist[i:] 
+            return retList
+    Alist.append(item)
+    return Alist
+
+def sortedInsert2(Alist, item) : #Helper function for Astar. 
+
+    for i in range(len(Alist)) :
+        if Alist[i].distance > item.distance : #[2] is the distance from the start_location.
             retList = Alist[:i] + [item] + Alist[i:] 
             return retList
     Alist.append(item)
@@ -177,4 +230,4 @@ if __name__ == "__main__" :
     print(BFS(maze, [0,0], [dim-1,dim-1], dim))
     print()
     print("Astar which determines the shortest path from S to G")
-    print(Astar(maze, [0,0], [dim-1, dim-1], dim))
+    print(Astar2(maze, [0,0], [dim-1, dim-1], dim))
