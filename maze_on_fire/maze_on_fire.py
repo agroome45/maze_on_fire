@@ -98,60 +98,13 @@ def BFS(matrix, start_location, end_location, dim): # Uses DFS to determine if o
             closed.append(current)  #puts current state in closed after generating valid children
     return False  
 
-class Node:
+#Node class for every position. Contains the position, the straightLine path from the position to the goal node, and a reference to the previous position.
+class Node: 
     def __init__(self, position, heuristic, distance, prev=None) :
         self.position = position
         self.heuristic = heuristic
         self.distance = distance
         self.prev = prev
-
-def Astar(matrix, start_location, end_location, dim):
-    fringe = [] #ITEMS: [0] x-coordinate [1] y-coordinate [2] euclidean distance heuristic [3] actual distance from start point [4] parent position
-    closed = []
-    inFringe = []
-    traceback = []
-    startNode = Node(start_location)
-    start_location.append(0) #placeholder for euclidean heuristic
-    start_location.append(0) #distance from start point to start point
-    fringe.append(start_location)
-    inFringe.append([start_location[0], start_location[1]])
-    while( fringe ):
-        print(fringe, "Fringe")
-        current = fringe.pop(0)
-        inFringe.remove([current[0], current[1]])
-        print(current, "current")
-        currentNode = Node([current[0], current[1]] , )
-        x = current[0]
-        y = current[1]
-        if matrix[x][y] == 'G' :
-            return True  #TODO return path instead of boolean
-        else :
-            if ((x+1) >= 0 and (x+1) < dim) :
-                if(matrix[x+1][y] == "O" or matrix[x+1][y] == "G"):
-                    if(closed.count([x+1,y]) == 0 and inFringe.count([x+1,y]) == 0) :
-                        fringe = sortedInsert(fringe, [x+1, y, current[3] + 1 + euclideanDistance([x+1, y] , end_location) , current[3] + 1] , )
-                        inFringe.append([x+1, y])
-                        node = Node([x+1, y], currentNode)
-            if ((x-1) >= 0 and (x-1) < dim) :
-                if(matrix[x-1][y] == "O" or matrix[x-1][y] == "G"):
-                    if(closed.count([x-1,y]) == 0 and inFringe.count([x-1,y]) == 0) :
-                        fringe = sortedInsert(fringe, [x-1, y, current[3] + 1 + euclideanDistance([x-1, y] , end_location) , current[3] + 1])
-                        inFringe.append([x-1, y])
-                        node = Node([x+1, y], currentNode)                        
-            if ((y+1) >= 0 and (y+1) < dim) :
-                if(matrix[x][y+1] == "O" or matrix[x][y+1] == "G"):
-                    if(closed.count([x,y+1]) == 0 and inFringe.count([x,y+1]) == 0) :
-                        fringe = sortedInsert(fringe, [x, y+1, current[3] + 1 + euclideanDistance([x, y+1] , end_location) , current[3] + 1])
-                        inFringe.append([x, y+1])
-                        node = Node([x+1, y], currentNode)
-            if ((y-1) >= 0 and (y-1) < dim) :
-                if(matrix[x][y-1] == "O" or matrix[x][y-1] == "G"):
-                    if(closed.count([x,y-1]) == 0 and inFringe.count([x,y-1]) == 0) :
-                        fringe = sortedInsert(fringe, [x, y-1, current[3] + 1 + euclideanDistance([x, y-1] , end_location) , current[3] + 1])
-                        inFringe.append([x, y-1])
-                        node = Node([x+1, y], currentNode)
-        closed.append([current])
-    return False
 
 def Astar2(matrix, start_location, end_location, dim) :
     roundCounter = 0
@@ -161,7 +114,7 @@ def Astar2(matrix, start_location, end_location, dim) :
     path = []
     startNode = Node(start_location, 0, 0)
     fringe.append(startNode)
-    inFringe.append([startNode.position[0], startNode.position[1]])
+    inFringe.append([startNode.position[0], startNode.position[1]]) #List to check if the current position being expanded is in the fringe already.
     while( fringe ) :
         roundCounter = roundCounter + 1
         currentNode = fringe.pop(0)
@@ -169,7 +122,7 @@ def Astar2(matrix, start_location, end_location, dim) :
         x = currentNode.position[0]
         y = currentNode.position[1]
         if matrix[x][y] == 'G' :
-            while( not(currentNode == startNode) ) :
+            while( not(currentNode == startNode) ) : #Traces back through nodes to construct path.
                 path.append(currentNode.position)
                 currentNode = currentNode.prev
             path.append(startNode.position)
@@ -179,53 +132,50 @@ def Astar2(matrix, start_location, end_location, dim) :
             return
         else :
             if ((x+1) >= 0 and (x+1) < dim) :
-                if(matrix[x+1][y] == "O" or matrix[x+1][y] == "G"):
-                    if(closed.count([x+1,y]) == 0) and (inFringe.count([x+1, y]) == 0) :
+                if(matrix[x+1][y] == "O" or matrix[x+1][y] == "G"): #Ensures left position is not on fire.
+                    if(closed.count([x+1,y]) == 0) and (inFringe.count([x+1, y]) == 0) : #Ensures left position is in the maze. 
                         node = Node([x+1, y], currentNode.distance + 1 + euclideanDistance([x+1,y], end_location), currentNode.distance + 1,  currentNode)
-                        fringe = sortedInsert2(fringe, node)
+                        # ^ Constructs a node using the position, the straight line path from the position to goal node, the distance from the start node,
+                        #   and the reference to the previous node.  
+                        fringe = sortedInsert2(fringe, node) #Sorted insert based on euclidean heuristic.
                         inFringe.append([x+1, y])
             if ((x-1) >= 0 and (x-1) < dim) :
-                if(matrix[x-1][y] == "O" or matrix[x-1][y] == "G"):
-                    if(closed.count([x-1,y]) == 0) and (inFringe.count([x-1, y]) == 0) :                           
+                if(matrix[x-1][y] == "O" or matrix[x-1][y] == "G"): #Ensures right position is not on fire. 
+                    if(closed.count([x-1,y]) == 0) and (inFringe.count([x-1, y]) == 0) : #Ensures right position is in the maze                     
                         node = Node([x-1, y], currentNode.distance + 1 + euclideanDistance([x-1,y], end_location), currentNode.distance + 1,  currentNode)
-                        fringe = sortedInsert2(fringe, node)
+                        # ^ Constructs a node using the position, the straight line path from the position to goal node, the distance from the start node,
+                        #   and the reference to the previous node.  
+                        fringe = sortedInsert2(fringe, node) #Sorted insert based on euclidean heuristic.
                         inFringe.append([x-1,y])
             if ((y+1) >= 0 and (y+1) < dim) :
-                if(matrix[x][y+1] == "O" or matrix[x][y+1] == "G"):
-                    if(closed.count([x,y+1]) == 0) and (inFringe.count([x,y+1]) == 0) :
+                if(matrix[x][y+1] == "O" or matrix[x][y+1] == "G"): #Ensures bottom position is not on fire. 
+                    if(closed.count([x,y+1]) == 0) and (inFringe.count([x,y+1]) == 0) : #Ensures bottom position is in the maze.
                         node = Node([x, y+1], currentNode.distance + 1 + euclideanDistance([x,y+1], end_location), currentNode.distance + 1,  currentNode)
-                        fringe = sortedInsert2(fringe, node)
+                        # ^ Constructs a node using the position, the straight line path from the position to goal node, the distance from the start node,
+                        #   and the reference to the previous node.  
+                        fringe = sortedInsert2(fringe, node) #Sorted insert based on euclidean heuristic.
                         inFringe.append([x,y+1])
             if ((y-1) >= 0 and (y-1) < dim) :
-                if(matrix[x][y-1] == "O" or matrix[x][y-1] == "G"):
-                    if(closed.count([x,y-1]) == 0) and (inFringe.count([x,y+1]) == 0):
+                if(matrix[x][y-1] == "O" or matrix[x][y-1] == "G"): #Ensures top position is not on fire.
+                    if(closed.count([x,y-1]) == 0) and (inFringe.count([x,y+1]) == 0): #Ensures top position is in the maze. 
                         node = Node([x, y-1], currentNode.distance + 1 + euclideanDistance([x,y-1], end_location), currentNode.distance + 1,  currentNode)
-                        fringe = sortedInsert2(fringe, node)
+                        # ^ Constructs a node using the position, the straight line path from the position to goal node, the distance from the start node,
+                        #   and the reference to the previous node.  
+                        fringe = sortedInsert2(fringe, node) #Sorted insert based on euclidean heuristic.
                         inFringe.append([x,y-1])
-        closed.append([currentNode.position[0], currentNode.position[1]])
+        closed.append([currentNode.position[0], currentNode.position[1]]) #closes state.
     print("there lies no path to the goal node. " , roundCounter, " rounds of A* were performed.")
     return
 
-
-def sortedInsert(Alist, item) : #Helper function for Astar. 
-
+def sortedInsert2(Alist, item) : #Helper function for Astar2. 
     for i in range(len(Alist)) :
-        if Alist[i][2] > item[2] : #[2] is the distance from the start_location.
+        if Alist[i].heuristic > item.heuristic : #sorts based on heuristic.
             retList = Alist[:i] + [item] + Alist[i:] 
             return retList
     Alist.append(item)
     return Alist
 
-def sortedInsert2(Alist, item) : #Helper function for Astar. 
-
-    for i in range(len(Alist)) :
-        if Alist[i].distance > item.distance : #[2] is the distance from the start_location.
-            retList = Alist[:i] + [item] + Alist[i:] 
-            return retList
-    Alist.append(item)
-    return Alist
-
-def euclideanDistance(start_point, end_point): #Function for euclidean metric heuristic
+def euclideanDistance(start_point, end_point): #Function for euclidean metric heuristic (straight line path between two points.)
     horizontalDiff = math.sqrt((end_point[0] - start_point[0]) ** 2)
     verticalDiff = math.sqrt((end_point[1] - start_point[1]) ** 2)
     return math.sqrt((verticalDiff**2) + (horizontalDiff**2))
