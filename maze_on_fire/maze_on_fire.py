@@ -1,5 +1,6 @@
 import queue
 import random
+import math
 from random import randint
 
 class BFS_state:
@@ -19,7 +20,7 @@ def create_maze(dim,p): # creates a maze given dem and p
                 j = "S"
             elif(i == (dim-1) and j == (dim-1)): # goal state at lower right corner
                 j = "G"
-            elif(rand > chance):
+            elif(rand >= chance):
                 j = "O"
             else:
                 j = "X"
@@ -39,7 +40,7 @@ def DFS(matrix, start_location, end_location, dim): # Uses DFS to determine if o
     closed = []
     fringe.append(start_location)
     while(len(fringe) != 0):
-       # print(fringe, "fringe") #prints fringe (NOT NEEDED)
+        #print(fringe, "fringe") #prints fringe (NOT NEEDED)
         current = fringe.pop()  #Pops state from fringe and makes current
         #print(current, "current") #prints current state (NOT NEEDED)
         if(current == end_location):
@@ -115,16 +116,101 @@ def BFS(matrix, start_location, end_location, dim): # Uses DFS to determine if o
             closed.append(current)  #puts current state in closed after generating valid children
     return [] 
 
-     
-            
-dim = int(input("Enter Size dim: "))
-p = float(input("Enter Probability (0 < p < 1) p:"))
+#Node class for every position. Contains the position, the straightLine path from the position to the goal node, and a reference to the previous position.
+class Node: 
+    def __init__(self, position, heuristic, distance, prev=None) :
+        self.position = position
+        self.heuristic = heuristic
+        self.distance = distance
+        self.prev = prev
 
-print()
-maze = create_maze(dim, p)
-print_maze(maze, dim)
-print("DFS which determines if G can be reached from S")
-print(DFS(maze, [0,0], [dim-1,dim-1], dim))
-print()
-print("BFS which determines if G can be reached from S")
-print(BFS(maze, [0,0], [dim-1,dim-1], dim))
+def Astar2(matrix, start_location, end_location, dim) :
+    roundCounter = 0
+    fringe = []
+    inFringe = []
+    closed = []
+    path = []
+    startNode = Node(start_location, 0, 0)
+    fringe.append(startNode)
+    inFringe.append([startNode.position[0], startNode.position[1]]) #List to check if the current position being expanded is in the fringe already.
+    while( fringe ) :
+        roundCounter = roundCounter + 1
+        currentNode = fringe.pop(0)
+        inFringe.remove([currentNode.position[0], currentNode.position[1]])
+        x = currentNode.position[0]
+        y = currentNode.position[1]
+        if matrix[x][y] == 'G' :
+            while( not(currentNode == startNode) ) : #Traces back through nodes to construct path.
+                path.append(currentNode.position)
+                currentNode = currentNode.prev
+            path.append(startNode.position)
+            path.reverse()
+            print(roundCounter, "rounds of A* were performed.")
+            print("Shortest path is: " , path)
+            return
+        else :
+            if ((x+1) >= 0 and (x+1) < dim) :
+                if(matrix[x+1][y] == "O" or matrix[x+1][y] == "G"): #Ensures left position is not on fire.
+                    if(closed.count([x+1,y]) == 0) and (inFringe.count([x+1, y]) == 0) : #Ensures left position is in the maze. 
+                        node = Node([x+1, y], currentNode.distance + 1 + euclideanDistance([x+1,y], end_location), currentNode.distance + 1,  currentNode)
+                        # ^ Constructs a node using the position, the straight line path from the position to goal node, the distance from the start node,
+                        #   and the reference to the previous node.  
+                        fringe = sortedInsert2(fringe, node) #Sorted insert based on euclidean heuristic.
+                        inFringe.append([x+1, y])
+            if ((x-1) >= 0 and (x-1) < dim) :
+                if(matrix[x-1][y] == "O" or matrix[x-1][y] == "G"): #Ensures right position is not on fire. 
+                    if(closed.count([x-1,y]) == 0) and (inFringe.count([x-1, y]) == 0) : #Ensures right position is in the maze                     
+                        node = Node([x-1, y], currentNode.distance + 1 + euclideanDistance([x-1,y], end_location), currentNode.distance + 1,  currentNode)
+                        # ^ Constructs a node using the position, the straight line path from the position to goal node, the distance from the start node,
+                        #   and the reference to the previous node.  
+                        fringe = sortedInsert2(fringe, node) #Sorted insert based on euclidean heuristic.
+                        inFringe.append([x-1,y])
+            if ((y+1) >= 0 and (y+1) < dim) :
+                if(matrix[x][y+1] == "O" or matrix[x][y+1] == "G"): #Ensures bottom position is not on fire. 
+                    if(closed.count([x,y+1]) == 0) and (inFringe.count([x,y+1]) == 0) : #Ensures bottom position is in the maze.
+                        node = Node([x, y+1], currentNode.distance + 1 + euclideanDistance([x,y+1], end_location), currentNode.distance + 1,  currentNode)
+                        # ^ Constructs a node using the position, the straight line path from the position to goal node, the distance from the start node,
+                        #   and the reference to the previous node.  
+                        fringe = sortedInsert2(fringe, node) #Sorted insert based on euclidean heuristic.
+                        inFringe.append([x,y+1])
+            if ((y-1) >= 0 and (y-1) < dim) :
+                if(matrix[x][y-1] == "O" or matrix[x][y-1] == "G"): #Ensures top position is not on fire.
+                    if(closed.count([x,y-1]) == 0) and (inFringe.count([x,y+1]) == 0): #Ensures top position is in the maze. 
+                        node = Node([x, y-1], currentNode.distance + 1 + euclideanDistance([x,y-1], end_location), currentNode.distance + 1,  currentNode)
+                        # ^ Constructs a node using the position, the straight line path from the position to goal node, the distance from the start node,
+                        #   and the reference to the previous node.  
+                        fringe = sortedInsert2(fringe, node) #Sorted insert based on euclidean heuristic.
+                        inFringe.append([x,y-1])
+        closed.append([currentNode.position[0], currentNode.position[1]]) #closes state.
+    print("there lies no path to the goal node. " , roundCounter, " rounds of A* were performed.")
+    return
+
+def sortedInsert2(Alist, item) : #Helper function for Astar2. 
+    for i in range(len(Alist)) :
+        if Alist[i].heuristic > item.heuristic : #sorts based on heuristic.
+            retList = Alist[:i] + [item] + Alist[i:] 
+            return retList
+    Alist.append(item)
+    return Alist
+
+def euclideanDistance(start_point, end_point): #Function for euclidean metric heuristic (straight line path between two points.)
+    horizontalDiff = math.sqrt((end_point[0] - start_point[0]) ** 2)
+    verticalDiff = math.sqrt((end_point[1] - start_point[1]) ** 2)
+    return math.sqrt((verticalDiff**2) + (horizontalDiff**2))
+
+if __name__ == "__main__" :            
+    dim = int(input("Enter Size dim: "))
+    p = float(input("Enter Probability (0 < p < 1) p:"))
+
+    print()
+    maze = create_maze(dim, p)
+    print_maze(maze, dim)
+    print("DFS which determines if G can be reached from S")
+    print(DFS(maze, [0,0], [dim-1,dim-1], dim))
+    print()
+    print("BFS which determines if G can be reached from S")
+    print(BFS(maze, [0,0], [dim-1,dim-1], dim))
+    print()
+    print("Astar which determines the shortest path from S to G")
+    print()
+    Astar2(maze, [0,0], [dim-1, dim-1], dim)
