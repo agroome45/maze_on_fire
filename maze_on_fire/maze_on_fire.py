@@ -3,12 +3,6 @@ import random
 import math
 from random import randint
 
-class BFS_state:
-    def __init__(self, state, prev):
-        self.state = state
-        self.prev = prev
-    
-
 def create_maze(dim,p): # creates a maze given dem and p
     maze=[]
     for i in range(dim):
@@ -67,7 +61,13 @@ def DFS(matrix, start_location, end_location, dim): # Uses DFS to determine if o
             closed.append(current)  #puts current state in closed after generating valid children
     return False
 
-def BFS(matrix, start_location, end_location, dim): # Uses DFS to determine if one state is reachable from another
+class BFS_state:
+    def __init__(self, state, prev):
+        self.state = state
+        self.prev = prev
+
+def BFS(matrix, start_location, end_location, dim): # Uses BFS to determine the shortest path from one state to another
+    roundCounter = 0
     fringe = queue.Queue()
     closed = []
     shortest_path = []
@@ -75,17 +75,19 @@ def BFS(matrix, start_location, end_location, dim): # Uses DFS to determine if o
     start_state = BFS_state(start_location, 0)
     fringe.put(start_state)
     while(fringe.empty() == False):
+        roundCounter = roundCounter + 1
         current_state = fringe.get()  #Pops state from fringe and makes current
         current = current_state.state
-       # print(current, "current") #prints current state (NOT NEEDED)
         if(current == end_location):
-            while(current != start_location):
+            while(current != start_location):#Traces back through nodes to construct path
                 shortest_path.append(current)
                 current_state = current_state.prev
                 current = current_state.state
             shortest_path.append(start_location)
             shortest_path.reverse()
-            return shortest_path
+            print(roundCounter, "rounds of BFS were performed.")
+            print("Shortest path is: " , shortest_path)
+            return 
         else:
             i = current[0]
             j = current[1]
@@ -114,7 +116,8 @@ def BFS(matrix, start_location, end_location, dim): # Uses DFS to determine if o
                         fringe.put(new_state)
                         inFringe.append([i,j-1])
             closed.append(current)  #puts current state in closed after generating valid children
-    return [] 
+    print("there lies no path to the goal node. " , roundCounter, " rounds of BFS were performed.")
+    return 
 
 #Node class for every position. Contains the position, the straightLine path from the position to the goal node, and a reference to the previous position.
 class Node: 
@@ -208,8 +211,9 @@ if __name__ == "__main__" :
     print("DFS which determines if G can be reached from S")
     print(DFS(maze, [0,0], [dim-1,dim-1], dim))
     print()
-    print("BFS which determines if G can be reached from S")
-    print(BFS(maze, [0,0], [dim-1,dim-1], dim))
+    print("BFS which determines the shortest path from S to G")
+    print()
+    BFS(maze, [0,0], [dim-1,dim-1], dim)
     print()
     print("Astar which determines the shortest path from S to G")
     print()
