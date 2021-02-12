@@ -178,7 +178,7 @@ def Astar2(matrix, start_location, end_location, dim) :
                         inFringe.append([x,y+1])
             if ((y-1) >= 0 and (y-1) < dim) :
                 if(matrix[x][y-1] == "O" or matrix[x][y-1] == "G"): #Ensures top position is not on fire.
-                    if(closed.count([x,y-1]) == 0) and (inFringe.count([x,y+1]) == 0): #Ensures top position is in the maze. 
+                    if(closed.count([x,y-1]) == 0) and (inFringe.count([x,y-1]) == 0): #Ensures top position is in the maze. 
                         node = Node([x, y-1], currentNode.distance + 1 + euclideanDistance([x,y-1], end_location), currentNode.distance + 1,  currentNode)
                         # ^ Constructs a node using the position, the straight line path from the position to goal node, the distance from the start node,
                         #   and the reference to the previous node.  
