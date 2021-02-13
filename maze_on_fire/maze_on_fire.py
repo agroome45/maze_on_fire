@@ -1,6 +1,7 @@
 import queue
 import random
 import math
+import time
 from random import randint
 
 def create_maze(dim,p): # creates a maze given dem and p
@@ -86,8 +87,8 @@ def BFS(matrix, start_location, end_location, dim): # Uses BFS to determine the 
             shortest_path.append(start_location)
             shortest_path.reverse()
             print(roundCounter, "rounds of BFS were performed.")
-            print("Shortest path is: " , shortest_path)
-            return 
+            #print("Shortest path is: " , shortest_path)
+            return roundCounter
         else:
             i = current[0]
             j = current[1]
@@ -117,7 +118,7 @@ def BFS(matrix, start_location, end_location, dim): # Uses BFS to determine the 
                         inFringe.append([i,j-1])
             closed.append(current)  #puts current state in closed after generating valid children
     print("there lies no path to the goal node. " , roundCounter, " rounds of BFS were performed.")
-    return 
+    return roundCounter
 
 #Node class for every position. Contains the position, the straightLine path from the position to the goal node, and a reference to the previous position.
 class Node: 
@@ -149,8 +150,8 @@ def Astar2(matrix, start_location, end_location, dim) :
             path.append(startNode.position)
             path.reverse()
             print(roundCounter, "rounds of A* were performed.")
-            print("Shortest path is: " , path)
-            return
+            #print("Shortest path is: " , path)
+            return roundCounter
         else :
             if ((x+1) >= 0 and (x+1) < dim) :
                 if(matrix[x+1][y] == "O" or matrix[x+1][y] == "G"): #Ensures left position is not on fire.
@@ -186,7 +187,7 @@ def Astar2(matrix, start_location, end_location, dim) :
                         inFringe.append([x,y-1])
         closed.append([currentNode.position[0], currentNode.position[1]]) #closes state.
     print("there lies no path to the goal node. " , roundCounter, " rounds of A* were performed.")
-    return
+    return roundCounter
 
 def sortedInsert2(Alist, item) : #Helper function for Astar2. 
     for i in range(len(Alist)) :
@@ -201,20 +202,35 @@ def euclideanDistance(start_point, end_point): #Function for euclidean metric he
     verticalDiff = math.sqrt((end_point[1] - start_point[1]) ** 2)
     return math.sqrt((verticalDiff**2) + (horizontalDiff**2))
 
-if __name__ == "__main__" :            
+if __name__ == "__main__" :  
+    AstarRounds = 0
+    BFSRounds = 0          
     dim = int(input("Enter Size dim: "))
-    p = float(input("Enter Probability (0 < p < 1) p:"))
-
+    p = float(input("Enter Probability (0 < p < 1) p: "))
+    rounds = int(input("Enter how many rounds of implementation you would like to perform: "))
     print()
     maze = create_maze(dim, p)
-    print_maze(maze, dim)
-    print("DFS which determines if G can be reached from S")
-    print(DFS(maze, [0,0], [dim-1,dim-1], dim))
+    #print_maze(maze, dim)
+    #print("DFS which determines if G can be reached from S")
+    #print(DFS(maze, [0,0], [dim-1,dim-1], dim))
+
+    for i in range(0, rounds) :
+        maze = create_maze(dim, p)
+
+        print("ITERATION ROUND" , i+1)
+        print()
+        bfs_start_time = time.time()
+        print("BFS: ")
+        BFSRounds = BFSRounds + BFS(maze, [0,0], [dim-1,dim-1], dim)
+        bfs_end_time = time.time()
+        print("time taken: " , bfs_end_time - bfs_start_time , "seconds")
+        print()
+        astar_start_time = time.time()
+        print("Astar: ")
+        AstarRounds = AstarRounds + Astar2(maze, [0,0], [dim-1, dim-1], dim)
+        astar_end_time = time.time()
+        print("time taken: ", astar_end_time - astar_start_time , "seconds.")
+        print()
+    averageDiff = (BFSRounds - AstarRounds) / rounds
     print()
-    print("BFS which determines the shortest path from S to G")
-    print()
-    BFS(maze, [0,0], [dim-1,dim-1], dim)
-    print()
-    print("Astar which determines the shortest path from S to G")
-    print()
-    Astar2(maze, [0,0], [dim-1, dim-1], dim)
+    print("Average difference of nodes explored between Astar and BFS: " , averageDiff)
