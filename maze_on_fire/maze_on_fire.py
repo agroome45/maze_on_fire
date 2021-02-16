@@ -39,7 +39,7 @@ def start_fire(maze): #Randomly starts a fire at a singular point in the maze
             maze[randX][randY] = 'F'
             return maze
 
-def advance_fire_one_step(maze, q): #advances fire once step
+def advance_fire_one_step(maze, q): #advances fire once step using maze and probability q
     adjacentFires = 0
     retMaze = copy.deepcopy(maze)
     for x in range(0, len(maze)):
@@ -240,13 +240,14 @@ if __name__ == "__main__" :
 
     dim = int(input("Enter Size dim: "))
     p = float(input("Enter Probability (0 < p < 1) p: "))
-    rounds = int(input("Enter how many rounds of implementation you would like to perform: "))
     maze = create_maze(dim, p)
-    print_maze(maze, dim)
     start_fire(maze)
+    print()
+    print("Fire!!")
+    print()
     print_maze(maze, dim)
-    maze = advance_fire_one_step(maze, 1)
-    print_maze(maze, dim)
+    #maze = advance_fire_one_step(maze, 1) #Check if advance_fire_one_step() function is working.
+    #print_maze(maze, dim)
 
 
     ########################## Data Collection Code ################################
@@ -256,7 +257,7 @@ if __name__ == "__main__" :
     print()
     #print("DFS which determines if G can be reached from S")
     #print(DFS(maze, [0,0], [dim-1,dim-1], dim))
-
+    rounds = int(input("Enter how many rounds of implementation you would like to perform: "))
     for i in range(0, rounds) :
         maze = create_maze(dim, p)
 
