@@ -2,6 +2,7 @@ import queue
 import random
 import math
 import time
+import copy
 from random import randint
 
 def create_maze(dim,p): # creates a maze given dem and p
@@ -29,7 +30,40 @@ def print_maze(maze,dim): #prints out the maze
             print(maze[i][j],end="    ")
         print()
     print()
-    
+
+def start_fire(maze): #Randomly starts a fire at a singular point in the maze
+    while(1):
+        randX = randint(0, len(maze)-1)
+        randY = randint(0, len(maze)-1)
+        if(maze[randX][randY] == 'O' or maze[randX][randY] == 'G' or maze[randX][randY] == 'S') : #Checks if randomly generated position is an open position.
+            maze[randX][randY] = 'F'
+            return maze
+
+def advance_fire_one_step(maze, q): #advances fire once step
+    adjacentFires = 0
+    retMaze = copy.deepcopy(maze)
+    for x in range(0, len(maze)):
+        for y in range(0, len(maze)):
+            if (maze[x][y] == 'O' or maze[x][y] == 'G'): #Checks if position is an open position.
+                if((x+1) >= 0 and (x+1) < len(maze)): #Checks if position to the right is within the maze.
+                    if(maze[x+1][y] == 'F'): #Checks if position to the right is on fire.
+                        adjacentFires = adjacentFires + 1
+                if((x-1) >= 0 and (x-1) < len(maze)): #Checks if position to the left is within the maze.
+                    if(maze[x-1][y] == 'F'): #Checks if position to the left is on fire.
+                        adjacentFires = adjacentFires + 1
+                if((y+1) >= 0 and (y+1) < len(maze)): #Checks if position below is within the maze.
+                    if(maze[x][y+1] == 'F'): #Checks if position below is on fire.
+                        adjacentFires = adjacentFires + 1
+                if((y-1) >= 0 and (y-1) < len(maze)): #Checks if position above is within the maze.
+                    if(maze[x][y-1] == 'F'): #Checks if position above is on fire.
+                        adjacentFires = adjacentFires + 1
+                
+                probability = (1 - (1-q)**adjacentFires) * 100 #Calculates true probability of fire spreading to current position. 
+                if(probability > randint(0,100)):
+                    retMaze[x][y] = 'F'
+                adjacentFires = 0
+    return retMaze
+
 def DFS(matrix, start_location, end_location, dim): # Uses DFS to determine if one state is reachable from another
     fringe = []
     closed = []
@@ -202,15 +236,24 @@ def euclideanDistance(start_point, end_point): #Function for euclidean metric he
     verticalDiff = math.sqrt((end_point[1] - start_point[1]) ** 2)
     return math.sqrt((verticalDiff**2) + (horizontalDiff**2))
 
-if __name__ == "__main__" :  
-    AstarRounds = 0
-    BFSRounds = 0          
+if __name__ == "__main__" :
+
     dim = int(input("Enter Size dim: "))
     p = float(input("Enter Probability (0 < p < 1) p: "))
     rounds = int(input("Enter how many rounds of implementation you would like to perform: "))
-    print()
     maze = create_maze(dim, p)
-    #print_maze(maze, dim)
+    print_maze(maze, dim)
+    start_fire(maze)
+    print_maze(maze, dim)
+    maze = advance_fire_one_step(maze, 1)
+    print_maze(maze, dim)
+
+
+    ########################## Data Collection Code ################################
+    """
+    AstarRounds = 0
+    BFSRounds = 0          
+    print()
     #print("DFS which determines if G can be reached from S")
     #print(DFS(maze, [0,0], [dim-1,dim-1], dim))
 
@@ -234,3 +277,6 @@ if __name__ == "__main__" :
     averageDiff = (BFSRounds - AstarRounds) / rounds
     print()
     print("Average difference of nodes explored between Astar and BFS: " , averageDiff)
+    
+    """
+    ##############################################################################
