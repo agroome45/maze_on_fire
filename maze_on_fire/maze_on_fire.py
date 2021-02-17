@@ -64,6 +64,28 @@ def advance_fire_one_step(maze, q): #advances fire once step using maze and prob
                 adjacentFires = 0
     return retMaze
 
+def strategy_one(maze, dim, q):
+    path = Astar2(maze, [0,0], [dim-1, dim-1], dim)
+    maze = start_fire(maze)
+    if(path == []):
+        return False
+    for i in range(len(path)):
+        Agent = path[i]
+        x = Agent[0]
+        y = Agent[1]
+        if(maze[x][y] == "F"):
+            print("Step :", i)
+            print_maze(maze, dim) 
+            return False
+        elif(maze[x][y] == "G"):
+            print("Step :", i)
+            print_maze(maze, dim) 
+            return True
+        maze[x][y] = "A"
+        print("Step :", i)
+        print_maze(maze, dim) #Can remove if maze is to big 
+        maze = advance_fire_one_step(maze, q)
+
 def DFS(matrix, start_location, end_location, dim): # Uses DFS to determine if one state is reachable from another
     fringe = []
     closed = []
@@ -122,7 +144,7 @@ def BFS(matrix, start_location, end_location, dim): # Uses BFS to determine the 
             shortest_path.reverse()
             print(roundCounter, "rounds of BFS were performed.")
             #print("Shortest path is: " , shortest_path)
-            return roundCounter
+            return shortest_path
         else:
             i = current[0]
             j = current[1]
@@ -152,7 +174,7 @@ def BFS(matrix, start_location, end_location, dim): # Uses BFS to determine the 
                         inFringe.append([i,j-1])
             closed.append(current)  #puts current state in closed after generating valid children
     print("there lies no path to the goal node. " , roundCounter, " rounds of BFS were performed.")
-    return roundCounter
+    return []
 
 #Node class for every position. Contains the position, the straightLine path from the position to the goal node, and a reference to the previous position.
 class Node: 
@@ -183,9 +205,9 @@ def Astar2(matrix, start_location, end_location, dim) :
                 currentNode = currentNode.prev
             path.append(startNode.position)
             path.reverse()
-            print(roundCounter, "rounds of A* were performed.")
-            #print("Shortest path is: " , path)
-            return roundCounter
+            #print(roundCounter, "rounds of A* were performed.")
+            print("Shortest path is: " , path)
+            return path
         else :
             if ((x+1) >= 0 and (x+1) < dim) :
                 if(matrix[x+1][y] == "O" or matrix[x+1][y] == "G"): #Ensures left position is not on fire.
@@ -221,7 +243,9 @@ def Astar2(matrix, start_location, end_location, dim) :
                         inFringe.append([x,y-1])
         closed.append([currentNode.position[0], currentNode.position[1]]) #closes state.
     print("there lies no path to the goal node. " , roundCounter, " rounds of A* were performed.")
-    return roundCounter
+    return []
+
+
 
 def sortedInsert2(Alist, item) : #Helper function for Astar2. 
     for i in range(len(Alist)) :
@@ -241,6 +265,14 @@ if __name__ == "__main__" :
     dim = int(input("Enter Size dim: "))
     p = float(input("Enter Probability (0 < p < 1) p: "))
     maze = create_maze(dim, p)
+    
+    
+    ######################Strategy One Code#########################
+    print("Strategy One")
+    print(strategy_one(maze, dim, .2))
+    print()
+ #########################test fire code####################################
+    """
     start_fire(maze)
     print()
     print("Fire!!")
@@ -248,7 +280,7 @@ if __name__ == "__main__" :
     print_maze(maze, dim)
     #maze = advance_fire_one_step(maze, 1) #Check if advance_fire_one_step() function is working.
     #print_maze(maze, dim)
-
+    """
 
     ########################## Data Collection Code ################################
     """
@@ -260,7 +292,6 @@ if __name__ == "__main__" :
     rounds = int(input("Enter how many rounds of implementation you would like to perform: "))
     for i in range(0, rounds) :
         maze = create_maze(dim, p)
-
         print("ITERATION ROUND" , i+1)
         print()
         bfs_start_time = time.time()
@@ -281,3 +312,5 @@ if __name__ == "__main__" :
     
     """
     ##############################################################################
+
+
