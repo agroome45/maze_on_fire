@@ -44,7 +44,7 @@ def advance_fire_one_step(maze, q): #advances fire once step using maze and prob
     retMaze = copy.deepcopy(maze)
     for x in range(0, len(maze)):
         for y in range(0, len(maze)):
-            if (maze[x][y] == 'O' or maze[x][y] == 'G'): #Checks if position is an open position.
+            if (maze[x][y] == 'O' or maze[x][y] == 'G' or maze[x][y] == 'A'): #Checks if position is an open position.
                 if((x+1) >= 0 and (x+1) < len(maze)): #Checks if position to the right is within the maze.
                     if(maze[x+1][y] == 'F'): #Checks if position to the right is on fire.
                         adjacentFires = adjacentFires + 1
@@ -85,6 +85,32 @@ def strategy_one(maze, dim, q):
         print("Step :", i)
         print_maze(maze, dim) #Can remove if maze is to big 
         maze = advance_fire_one_step(maze, q)
+
+def strategy_two(maze, dim, q):
+    maze = start_fire(maze)
+    currentPos = [0,0]
+    stepCounter = 0
+    while (currentPos != [dim-1,dim-1]):
+        print("Agent at position ", currentPos)
+        print()
+        path = Astar2(maze, currentPos, [dim-1, dim-1], dim)
+        if(maze[currentPos[0]][currentPos[1]] == 'F'): #Agent has caught on fire.
+            maze[currentPos[0]][currentPos[1]] = 'D'
+            print_maze(maze, dim)
+            print("Agent is on fire! :(")
+            return False
+        if(path): #There still lies a path to the goal node.
+            currentPos = path[1]
+            stepCounter = stepCounter + 1
+            maze[currentPos[0]][currentPos[1]] = 'A'
+            print_maze(maze, dim)
+            maze = advance_fire_one_step(maze, q)
+        else: #There no longer lies a path to the goal node.
+            print_maze(maze, dim)
+            print("Agent can no longer proceed to the exit. :(")
+            return False
+    print("Agent has successfully reached the goal in ", stepCounter, "steps! :)")
+    return True
 
 def DFS(matrix, start_location, end_location, dim): # Uses DFS to determine if one state is reachable from another
     fringe = []
@@ -206,7 +232,7 @@ def Astar2(matrix, start_location, end_location, dim) :
             path.append(startNode.position)
             path.reverse()
             #print(roundCounter, "rounds of A* were performed.")
-            print("Shortest path is: " , path)
+            #print("Shortest path is: " , path)
             return path
         else :
             if ((x+1) >= 0 and (x+1) < dim) :
@@ -242,7 +268,7 @@ def Astar2(matrix, start_location, end_location, dim) :
                         fringe = sortedInsert2(fringe, node) #Sorted insert based on euclidean heuristic.
                         inFringe.append([x,y-1])
         closed.append([currentNode.position[0], currentNode.position[1]]) #closes state.
-    print("there lies no path to the goal node. " , roundCounter, " rounds of A* were performed.")
+    #print("there lies no path to the goal node. " , roundCounter, " rounds of A* were performed.")
     return []
 
 
@@ -263,15 +289,24 @@ def euclideanDistance(start_point, end_point): #Function for euclidean metric he
 if __name__ == "__main__" :
 
     dim = int(input("Enter Size dim: "))
-    p = float(input("Enter Probability (0 < p < 1) p: "))
+    p = float(input("Enter Maze Probability (0 < p < 1) p: "))
+    q = float(input("Enter Firespread Probability (0 < q < 1) q: "))
     maze = create_maze(dim, p)
     
     
-    ######################Strategy One Code#########################
+    ########################### Strategy One Code ##################################
+    """
     print("Strategy One")
-    print(strategy_one(maze, dim, .2))
+    print(strategy_one(maze, dim, q))
     print()
- #########################test fire code####################################
+
+    """
+    ########################## Strategy Two Code ###################################
+    print("Strategy Two")
+    strategy_two(maze, dim, q)
+    print()
+
+    ########################## Test Fire Code ####################################
     """
     start_fire(maze)
     print()
@@ -280,9 +315,10 @@ if __name__ == "__main__" :
     print_maze(maze, dim)
     #maze = advance_fire_one_step(maze, 1) #Check if advance_fire_one_step() function is working.
     #print_maze(maze, dim)
+    
     """
-
-    ########################## Data Collection Code ################################
+    ###
+    ####################### Data Collection Code ################################
     """
     AstarRounds = 0
     BFSRounds = 0          
