@@ -187,7 +187,7 @@ class Node:
 def Astar2(matrix, start_location, end_location, dim) :
     roundCounter = 0
     fringe = []
-    inFringe = []
+    inFringe = [] 
     closed = []
     path = []
     startNode = Node(start_location, 0, 0)
