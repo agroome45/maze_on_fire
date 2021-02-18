@@ -32,12 +32,13 @@ def print_maze(maze,dim): #prints out the maze
     print()
 
 def start_fire(maze): #Randomly starts a fire at a singular point in the maze
+    retMaze = copy.deepcopy(maze)
     while(1):
         randX = randint(0, len(maze)-1)
         randY = randint(0, len(maze)-1)
         if(maze[randX][randY] == 'O' or maze[randX][randY] == 'G' or maze[randX][randY] == 'S') : #Checks if randomly generated position is an open position.
-            maze[randX][randY] = 'F'
-            return maze
+            retMaze[randX][randY] = 'F'
+            return retMaze
 
 def advance_fire_one_step(maze, q): #advances fire once step using maze and probability q
     adjacentFires = 0
@@ -74,16 +75,16 @@ def strategy_one(maze, dim, q):
         x = Agent[0]
         y = Agent[1]
         if(maze[x][y] == "F"):
-            print("Step :", i)
-            print_maze(maze, dim) 
+            #print("Step :", i)
+            #print_maze(maze, dim) 
             return False
         elif(maze[x][y] == "G"):
-            print("Step :", i)
-            print_maze(maze, dim) 
+            #print("Step :", i)
+            #print_maze(maze, dim) 
             return True
         maze[x][y] = "A"
-        print("Step :", i)
-        print_maze(maze, dim) #Can remove if maze is to big 
+        #print("Step :", i)
+        #print_maze(maze, dim) #Can remove if maze is to big 
         maze = advance_fire_one_step(maze, q)
 
 def strategy_two(maze, dim, q):
@@ -91,25 +92,25 @@ def strategy_two(maze, dim, q):
     currentPos = [0,0]
     stepCounter = 0
     while (currentPos != [dim-1,dim-1]):
-        print("Agent at position ", currentPos)
-        print()
+        #print("Agent at position ", currentPos)
+        #print()
         path = Astar2(maze, currentPos, [dim-1, dim-1], dim)
         if(maze[currentPos[0]][currentPos[1]] == 'F'): #Agent has caught on fire.
             maze[currentPos[0]][currentPos[1]] = 'D'
-            print_maze(maze, dim)
-            print("Agent is on fire! :(")
+            #print_maze(maze, dim)
+            #print("Agent is on fire! :(")
             return False
         if(path): #There still lies a path to the goal node.
             currentPos = path[1]
             stepCounter = stepCounter + 1
             maze[currentPos[0]][currentPos[1]] = 'A'
-            print_maze(maze, dim)
+            #print_maze(maze, dim)
             maze = advance_fire_one_step(maze, q)
         else: #There no longer lies a path to the goal node.
-            print_maze(maze, dim)
-            print("Agent can no longer proceed to the exit. :(")
+            #print_maze(maze, dim)
+            #print("Agent can no longer proceed to the exit. :(")
             return False
-    print("Agent has successfully reached the goal in ", stepCounter, "steps! :)")
+    #print("Agent has successfully reached the goal in ", stepCounter, "steps! :)")
     return True
 
 def DFS(matrix, start_location, end_location, dim): # Uses DFS to determine if one state is reachable from another
@@ -301,12 +302,14 @@ if __name__ == "__main__" :
     print()
 
     """
-    ########################## Strategy Two Code ###################################
+    ########################### Strategy Two Code ###################################
+    """
     print("Strategy Two")
     strategy_two(maze, dim, q)
     print()
 
-    ########################## Test Fire Code ####################################
+    """
+    ############################ Test Fire Code ######################################
     """
     start_fire(maze)
     print()
@@ -317,8 +320,7 @@ if __name__ == "__main__" :
     #print_maze(maze, dim)
     
     """
-    ###
-    ####################### Data Collection Code ################################
+    ####################### Data Collection Code 1-4 ################################
     """
     AstarRounds = 0
     BFSRounds = 0          
@@ -347,6 +349,49 @@ if __name__ == "__main__" :
     print("Average difference of nodes explored between Astar and BFS: " , averageDiff)
     
     """
-    ##############################################################################
+    ################## Data Collection Code 5-8 #####################################
+    #"""
+    rounds = int(input("Enter how many rounds of implementation you would like to perform: "))
+    one_wins = 0
+    two_wins = 0
+    three_wins = 0
+    for i in range(0, rounds) :
+        maze = create_maze(dim, p)
+        print("ITERATION ROUND", i+1, end="\n\n")
+        isWin = strategy_one(maze, dim, q)
+        if(isWin):
+            print("Strategy one has gotten the agent through the maze!", end="\n\n")
+            one_wins = one_wins + 1
+        else:
+            print("Strategy one has doomed the agent. :(", end="\n\n")
+        isWin = strategy_two(maze, dim, q)
+        if(isWin):
+            print("Strategy two has gotten the agent through the maze!" , end="\n\n")
+            two_wins = two_wins + 1
+        else:
+            print("Strategy two has doomed the agent. :(", end="\n\n")
+        """                                                              DELETE COMMENTED CODE ONCE STRATEGY THREE HAS BEEN IMPLEMENTED!
+        isWin = strategy_three(maze, dim, q)
+        if(isWin):
+            print("Strategy three has gotten the agent through the maze!" , end="\n\n")
+            two_wins = two_wins + 1
+        else:
+            print("Strategy three has doomed the agent. :(", end="\n\n")
+        """
+        
+    one_success_rate = (one_wins / rounds) * 100
+    two_success_rate = (two_wins / rounds) * 100
+    three_success_rate = (three_wins / rounds) * 100
+    print("Average Success Rate of Strategy One: " , one_success_rate, "%" , end="\n\n")
+    print("Average Success Rate of Strategy Two: ", two_success_rate, "%" , end="\n\n")
+    #print("Average Success Rate of Strategy Three: ", three_success_rate, "%", end="\n\n") #THIS TOO!!
+    
+
+    #"""
+    #################################################################################
+
+
+
+
 
 
