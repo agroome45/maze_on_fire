@@ -57,11 +57,12 @@ def advance_fire_one_step(maze, q): #advances fire once step using maze and prob
                 if((y-1) >= 0 and (y-1) < len(maze)): #Checks if position above is within the maze.
                     if(maze[x][y-1] == 'F'): #Checks if position above is on fire.
                         adjacentFires = adjacentFires + 1
-                
-                probability = (1 - (1-q)**adjacentFires) * 100 #Calculates true probability of fire spreading to current position. 
-                if(probability > randint(0,100)):
-                    retMaze[x][y] = 'F'
-                adjacentFires = 0
+                if(adjacentFires > 0):
+                    probability = (1 - (1-q)**adjacentFires) * 100 #Calculates true probability of fire spreading to current position. 
+                    random = randint(0,100)
+                    if(probability > random):
+                        retMaze[x][y] = 'F'
+                    adjacentFires = 0
     return retMaze
 
 def strategy_one(maze, dim, q):
@@ -74,17 +75,104 @@ def strategy_one(maze, dim, q):
         x = Agent[0]
         y = Agent[1]
         if(maze[x][y] == "F"):
-            print("Step :", i)
-            print_maze(maze, dim) 
+            #print("Step :", i)
+            #print_maze(maze, dim) 
             return False
         elif(maze[x][y] == "G"):
-            print("Step :", i)
-            print_maze(maze, dim) 
+            #print("Step :", i)
+            #print_maze(maze, dim) 
             return True
         maze[x][y] = "A"
-        print("Step :", i)
-        print_maze(maze, dim) #Can remove if maze is to big 
+        #print("Step :", i)
+        #print_maze(maze, dim) #Can remove if maze is to big 
         maze = advance_fire_one_step(maze, q)
+        
+def strategy_two(maze, dim, q):
+    maze = start_fire(maze)
+    currentPos = [0,0]
+    stepCounter = 0
+    while (currentPos != [dim-1,dim-1]):
+        #print("Agent at position ", currentPos)
+        #print()
+        path = Astar2(maze, currentPos, [dim-1, dim-1], dim)
+        if(maze[currentPos[0]][currentPos[1]] == 'F'): #Agent has caught on fire.
+            maze[currentPos[0]][currentPos[1]] = 'D'
+            #print_maze(maze, dim)
+            print("Agent is on fire! :(")
+            return False
+        if(path): #There still lies a path to the goal node.
+            currentPos = path[1]
+            stepCounter = stepCounter + 1
+            maze[currentPos[0]][currentPos[1]] = 'A'
+            #print_maze(maze, dim)
+            maze = advance_fire_one_step(maze, q)
+        else:# There no longer lies a path to the goal node.
+            #print_maze(maze, dim)
+            #print("Agent can no longer proceed to the exit. :(")
+            return False
+    #print("Agent has successfully reached the goal in ", stepCounter, "steps! :)")
+    return True
+        
+def strategy_three(maze, dim, q):
+    maze = start_fire(maze)
+    currentPos = [0,0]
+    stepCounter = 0
+    while (currentPos != [dim-1,dim-1]):
+        print("Agent at position ", currentPos)
+        print()
+        path = Astar2(maze, currentPos, [dim-1, dim-1], dim)
+        if(maze[currentPos[0]][currentPos[1]] == 'F'): #Agent has caught on fire.
+            maze[currentPos[0]][currentPos[1]] = 'D'
+            print_maze(maze, dim)
+            print("Agent is on fire! :(")
+            return False
+        if(path): #There still lies a path to the goal node.
+            currentPos = path[1]
+            oldPos = path[0]
+            if(check_fire(currentPos, maze) == True):
+                x = oldPos[0]
+                y = oldPos[1]
+                if((x-1) >= 0 and (x-1) < len(maze)): 
+                    if(check_fire([x-1,y], maze) == False and maze[x-1][y] == "O" and DFS(maze,[x-1,y] ,[dim-1, dim-1] , dim)): 
+                        currentPos = [x-1,y]
+                if((y-1) >= 0 and (y-1) < len(maze) ): 
+                    if(check_fire([x,y-1], maze)== False and maze[x][y-1] == "O" and DFS(maze,[x,y-1] ,[dim-1, dim-1] , dim)):
+                        currentPos = [x,y-1]
+                if((y+1) >= 0 and (y+1) < len(maze)): 
+                    if(check_fire([x,y+1], maze) == False and maze[x][y+1] == "O" and DFS(maze,[x,y+1] ,[dim-1, dim-1] , dim)): 
+                        currentPos = [x,y+1]
+                if((x+1) >= 0 and (x+1) < len(maze)): 
+                    if(check_fire([x+1,y], maze) == False and maze[x+1][y] == "O" and DFS(maze,[x+1,y] ,[dim-1, dim-1] , dim)): 
+                        currentPos = [x+1,y]
+            stepCounter = stepCounter + 1
+            maze[currentPos[0]][currentPos[1]] = 'A'
+            print_maze(maze, dim)
+            maze = advance_fire_one_step(maze, q)
+        else: #There no longer lies a path to the goal node.
+            print_maze(maze, dim)
+            print("Agent can no longer proceed to the exit. :(")
+            return False
+    print("Agent has successfully reached the goal in ", stepCounter, "steps! :)")
+    return True
+
+
+def check_fire(prosition, maze):
+    x = prosition[0]
+    y = prosition[1]
+    if((x+1) >= 0 and (x+1) < len(maze)): 
+        if(maze[x+1][y] == 'F'): 
+            return True
+    if((x-1) >= 0 and (x-1) < len(maze)): 
+        if(maze[x-1][y] == 'F'): 
+            return True
+    if((y+1) >= 0 and (y+1) < len(maze)): 
+        if(maze[x][y+1] == 'F'): 
+            return True
+    if((y-1) >= 0 and (y-1) < len(maze)): 
+        if(maze[x][y-1] == 'F'): 
+            return True
+    return False
+    
 
 def DFS(matrix, start_location, end_location, dim): # Uses DFS to determine if one state is reachable from another
     fringe = []
@@ -206,7 +294,7 @@ def Astar2(matrix, start_location, end_location, dim) :
             path.append(startNode.position)
             path.reverse()
             #print(roundCounter, "rounds of A* were performed.")
-            print("Shortest path is: " , path)
+            #print("Shortest path is: " , path)
             return path
         else :
             if ((x+1) >= 0 and (x+1) < dim) :
@@ -242,7 +330,7 @@ def Astar2(matrix, start_location, end_location, dim) :
                         fringe = sortedInsert2(fringe, node) #Sorted insert based on euclidean heuristic.
                         inFringe.append([x,y-1])
         closed.append([currentNode.position[0], currentNode.position[1]]) #closes state.
-    print("there lies no path to the goal node. " , roundCounter, " rounds of A* were performed.")
+    #print("there lies no path to the goal node. " , roundCounter, " rounds of A* were performed.")
     return []
 
 
@@ -265,12 +353,38 @@ if __name__ == "__main__" :
     dim = int(input("Enter Size dim: "))
     p = float(input("Enter Probability (0 < p < 1) p: "))
     maze = create_maze(dim, p)
-    
+    #print_maze(maze, dim)
     
     ######################Strategy One Code#########################
-    print("Strategy One")
-    print(strategy_one(maze, dim, .2))
+    
+    index = 0
+    success = 0
+    while(index < 1000):
+        maze = create_maze(dim, p)
+        if(DFS(maze, [0,0], [dim-1,dim-1], dim) == True):
+            if(strategy_two(maze, dim, .3) == True):
+                success = success + 1
+            index = index + 1
+    print(success, "TWO")
+    
     print()
+    
+    index = 0
+    success = 0
+    while(index < 1000):
+        maze = create_maze(dim, p)
+        if(DFS(maze, [0,0], [dim-1,dim-1], dim) == True):
+            if(strategy_three(maze, dim, .3) == True):
+                success = success + 1
+            index = index + 1
+    print(success, "THREE")
+    
+ #########################Strategy three Code##############################
+    """
+    print("Strategy Three")
+    print(strategy_three(maze, dim, .2))
+    print()
+    """
  #########################test fire code####################################
     """
     start_fire(maze)
