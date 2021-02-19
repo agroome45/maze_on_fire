@@ -462,47 +462,51 @@ if __name__ == "__main__" :
     """
     ##################### Data Collection Code Qs 5-8 ##################################
     #"""
+  
     rounds = int(input("Enter how many rounds of implementation you would like to perform: "))
     print()
     
-    
-    one_wins = 0
-    two_wins = 0
-    three_wins = 0
-    index = 0
-    while(rounds > index):
-        maze = create_maze(dim, p)
-        maze = start_fire(maze)
-        if(DFS(maze, [0,0], [dim-1,dim-1], dim) == True):
-            maze_2 = copy.deepcopy(maze)
-            maze_3 = copy.deepcopy(maze)
-            print("ITERATION ROUND", index+1, end="\n\n")
-            isWin = strategy_one(maze, dim, q, wantsPrint)
-            if(isWin):
-                print("Strategy one has gotten the agent through the maze!", end="\n\n")
-                one_wins = one_wins + 1
-            else:
-                print("Strategy one has doomed the agent. :(", end="\n\n")
-            isWin = strategy_two(maze_2, dim, q, wantsPrint)
-            if(isWin):
-                print("Strategy two has gotten the agent through the maze!" , end="\n\n")
-                two_wins = two_wins + 1
-            else:
-                print("Strategy two has doomed the agent. :(", end="\n\n")
-            isWin = strategy_three(maze_3, dim, q, wantsPrint)
-            if(isWin):
-                print("Strategy three has gotten the agent through the maze!" , end="\n\n")
-                three_wins = three_wins + 1
-            else:
-                print("Strategy three has doomed the agent. :(", end="\n\n")
-            index = index + 1
-    print()
-    one_success_rate = (one_wins / rounds) * 100
-    two_success_rate = (two_wins / rounds) * 100
-    three_success_rate = (three_wins / rounds) * 100
-    print("Average Success Rate of Strategy One: " , one_success_rate, "%" , end="\n\n")
-    print("Average Success Rate of Strategy Two: ", two_success_rate, "%" , end="\n\n")
-    print("Average Success Rate of Strategy Three: ", three_success_rate, "%", end="\n\n")
+    while(q < 1.05):
+        one_wins = 0
+        two_wins = 0
+        three_wins = 0
+        index = 0
+        while(rounds > index):
+            maze = create_maze(dim, p)
+            maze = start_fire(maze)
+            if(DFS(maze, [0,0], [dim-1,dim-1], dim) == True):
+                maze_2 = copy.deepcopy(maze)
+                maze_3 = copy.deepcopy(maze)
+                #print("ITERATION ROUND", index+1, end="\n\n")
+                isWin = strategy_one(maze, dim, q, wantsPrint)
+                if(isWin):
+                    #print("Strategy one has gotten the agent through the maze!", end="\n\n")
+                    one_wins = one_wins + 1
+                #else:
+                    #print("Strategy one has doomed the agent. :(", end="\n\n")
+                isWin = strategy_two(maze_2, dim, q, wantsPrint)
+                if(isWin):
+                    #print("Strategy two has gotten the agent through the maze!" , end="\n\n")
+                    two_wins = two_wins + 1
+                #else:
+                    #print("Strategy two has doomed the agent. :(", end="\n\n")
+                isWin = strategy_three(maze_3, dim, q, wantsPrint)
+                if(isWin):
+                    #print("Strategy three has gotten the agent through the maze!" , end="\n\n")
+                    three_wins = three_wins + 1
+                #else:
+                    #print("Strategy three has doomed the agent. :(", end="\n\n")
+                index = index + 1
+        print()    
+        print("When q = ", q)
+        print()
+        one_success_rate = (one_wins / rounds) * 100
+        two_success_rate = (two_wins / rounds) * 100
+        three_success_rate = (three_wins / rounds) * 100
+        print("Average Success Rate of Strategy One: " , one_success_rate, "%" , end="\n\n")
+        print("Average Success Rate of Strategy Two: ", two_success_rate, "%" , end="\n\n")
+        print("Average Success Rate of Strategy Three: ", three_success_rate, "%", end="\n\n")
+        q = q + .05
       
 
 
