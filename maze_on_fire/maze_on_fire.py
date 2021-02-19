@@ -149,7 +149,6 @@ def strategy_three(maze, dim, q, isPrint): #tries to avoid positions that are re
                         #^ Checks if adjacent position is next to a fire, open, and reachable to the goal position
                         currentPos = [x,y-1]# if so readjust current position
                 if((y+1) >= 0 and (y+1) < len(maze)): # Checks if the following state is in the maze range 
-                    #(Since y+1 is closer to goal, it has more a priority to being the current position)
                     if(check_fire([x,y+1], maze) == False and maze[x][y+1] == "O" and DFS(maze,[x,y+1] ,[dim-1, dim-1] , dim)): 
                         #^ Checks if adjacent position is next to a fire, open, and reachable to the goal position
                         currentPos = [x,y+1]# if so readjust current position
@@ -414,6 +413,8 @@ if __name__ == "__main__" :
     """
     ########################## Strategy Three Test ##################################
     """
+    maze = create_maze(dim, p)
+    maze = start_fire(maze)
     print("Strategy Three")
     print(strategy_three(maze, dim, q, wantsPrint))
     print()
@@ -469,6 +470,8 @@ if __name__ == "__main__" :
     for i in range(0, rounds) :
         maze = create_maze(dim, p)
         maze = start_fire(maze)
+        maze_2 = copy.deepcopy(maze)
+        maze_3 = copy.deepcopy(maze)
         print("ITERATION ROUND", i+1, end="\n\n")
         isWin = strategy_one(maze, dim, q, wantsPrint)
         if(isWin):
@@ -476,13 +479,13 @@ if __name__ == "__main__" :
             one_wins = one_wins + 1
         else:
             print("Strategy one has doomed the agent. :(", end="\n\n")
-        isWin = strategy_two(maze, dim, q, wantsPrint)
+        isWin = strategy_two(maze_2, dim, q, wantsPrint)
         if(isWin):
             print("Strategy two has gotten the agent through the maze!" , end="\n\n")
             two_wins = two_wins + 1
         else:
             print("Strategy two has doomed the agent. :(", end="\n\n")
-        isWin = strategy_three(maze, dim, q, wantsPrint)
+        isWin = strategy_three(maze_3, dim, q, wantsPrint)
         if(isWin):
             print("Strategy three has gotten the agent through the maze!" , end="\n\n")
             three_wins = three_wins + 1
