@@ -32,19 +32,20 @@ def print_maze(maze,dim): #prints out the maze
     print()
 
 def start_fire(maze): #Randomly starts a fire at a singular point in the maze
+    retMaze = copy.deepcopy(maze)
     while(1):
         randX = randint(0, len(maze)-1)
         randY = randint(0, len(maze)-1)
         if(maze[randX][randY] == 'O' or maze[randX][randY] == 'G' or maze[randX][randY] == 'S') : #Checks if randomly generated position is an open position.
-            maze[randX][randY] = 'F'
-            return maze
+            retMaze[randX][randY] = 'F'
+            return retMaze
 
 def advance_fire_one_step(maze, q): #advances fire once step using maze and probability q
     adjacentFires = 0
     retMaze = copy.deepcopy(maze)
     for x in range(0, len(maze)):
         for y in range(0, len(maze)):
-            if (maze[x][y] == 'O' or maze[x][y] == 'G'): #Checks if position is an open position.
+            if (maze[x][y] == 'O' or maze[x][y] == 'G' or maze[x][y] == 'A'): #Checks if position is an open position.
                 if((x+1) >= 0 and (x+1) < len(maze)): #Checks if position to the right is within the maze.
                     if(maze[x+1][y] == 'F'): #Checks if position to the right is on fire.
                         adjacentFires = adjacentFires + 1
@@ -65,9 +66,8 @@ def advance_fire_one_step(maze, q): #advances fire once step using maze and prob
                     adjacentFires = 0
     return retMaze
 
-def strategy_one(maze, dim, q):
-    path = Astar2(maze, [0,0], [dim-1, dim-1], dim)
-    maze = start_fire(maze)
+def strategy_one(maze, dim, q, isPrint):
+    path = Astar2(maze, [0,0], [dim-1, dim-1], dim, True, False)
     if(path == []):
         return False
     for i in range(len(path)):
@@ -75,56 +75,64 @@ def strategy_one(maze, dim, q):
         x = Agent[0]
         y = Agent[1]
         if(maze[x][y] == "F"):
-            #print("Step :", i)
-            #print_maze(maze, dim) 
+            if(isPrint):
+                print("Step :", i)
+                print_maze(maze, dim) 
             return False
         elif(maze[x][y] == "G"):
-            #print("Step :", i)
-            #print_maze(maze, dim) 
+            if(isPrint):
+                print("Step :", i)
+                print_maze(maze, dim) 
             return True
         maze[x][y] = "A"
-        #print("Step :", i)
-        #print_maze(maze, dim) #Can remove if maze is to big 
+        if(isPrint):
+            print("Step :", i)
+            print_maze(maze, dim) #Can remove if maze is to big 
         maze = advance_fire_one_step(maze, q)
         
-def strategy_two(maze, dim, q):
-    maze = start_fire(maze)
+def strategy_two(maze, dim, q, isPrint):
     currentPos = [0,0]
     stepCounter = 0
     while (currentPos != [dim-1,dim-1]):
-        #print("Agent at position ", currentPos)
-        #print()
-        path = Astar2(maze, currentPos, [dim-1, dim-1], dim)
+        if(isPrint):
+            print("Agent at position ", currentPos)
+            print()
+        path = Astar2(maze, currentPos, [dim-1, dim-1], dim, True, False)
         if(maze[currentPos[0]][currentPos[1]] == 'F'): #Agent has caught on fire.
             maze[currentPos[0]][currentPos[1]] = 'D'
-            #print_maze(maze, dim)
-            #print("Agent is on fire! :(")
+            if(isPrint):
+                print_maze(maze, dim)
+                print("Agent is on fire! :(")
             return False
         if(path): #There still lies a path to the goal node.
             currentPos = path[1]
             stepCounter = stepCounter + 1
             maze[currentPos[0]][currentPos[1]] = 'A'
-            #print_maze(maze, dim)
+            if(isPrint):
+                print_maze(maze, dim)
             maze = advance_fire_one_step(maze, q)
         else:# There no longer lies a path to the goal node.
-            #print_maze(maze, dim)
-            #print("Agent can no longer proceed to the exit. :(")
+            if(isPrint):
+                print_maze(maze, dim)
+                print("Agent can no longer proceed to the exit. :(")
             return False
-    #print("Agent has successfully reached the goal in ", stepCounter, "steps! :)")
+    if(isPrint):
+        print("Agent has successfully reached the goal in ", stepCounter, "steps! :)")
     return True
         
-def strategy_three(maze, dim, q): #tries to avoid positions that are reachable by the fire. Adjusts path when fire is reachable. Predicts
-    maze = start_fire(maze)
+def strategy_three(maze, dim, q, isPrint): #tries to avoid positions that are reachable by the fire. Adjusts path when fire is reachable. Predicts
     currentPos = [0,0]
     stepCounter = 0
     while (currentPos != [dim-1,dim-1]):
-        print("Agent at position ", currentPos)
-        print()
-        path = Astar2(maze, currentPos, [dim-1, dim-1], dim)
+        if(isPrint):
+            print("Agent at position ", currentPos)
+            print()
+        path = Astar2(maze, currentPos, [dim-1, dim-1], dim, True, False)
         if(maze[currentPos[0]][currentPos[1]] == 'F'): #Agent has caught on fire.
             maze[currentPos[0]][currentPos[1]] = 'D'
-            print_maze(maze, dim)
-            print("Agent is on fire! :(")
+            if(isPrint):
+                print_maze(maze, dim)
+                print("Agent is on fire! :(")
             return False
         if(path): #There still lies a path to the goal node.
             currentPos = path[1]
@@ -152,13 +160,16 @@ def strategy_three(maze, dim, q): #tries to avoid positions that are reachable b
                 #if all adjacent positions are next to fire than use original current position
             stepCounter = stepCounter + 1
             maze[currentPos[0]][currentPos[1]] = 'A'
-            print_maze(maze, dim)
+            if(isPrint):
+                print_maze(maze, dim)
             maze = advance_fire_one_step(maze, q)
         else: #There no longer lies a path to the goal node.
-            print_maze(maze, dim)
-            print("Agent can no longer proceed to the exit. :(")
+            if(isPrint):
+                print_maze(maze, dim)
+                print("Agent can no longer proceed to the exit. :(")
             return False
-    print("Agent has successfully reached the goal in ", stepCounter, "steps! :)")
+    if(isPrint):
+        print("Agent has successfully reached the goal in ", stepCounter, "steps! :)")
     return True
 
 
@@ -178,7 +189,6 @@ def check_fire(prosition, maze):
         if(maze[x][y-1] == 'F'): 
             return True
     return False
-    
 
 def DFS(matrix, start_location, end_location, dim): # Uses DFS to determine if one state is reachable from another
     fringe = []
@@ -217,7 +227,7 @@ class BFS_state:
         self.state = state
         self.prev = prev
 
-def BFS(matrix, start_location, end_location, dim): # Uses BFS to determine the shortest path from one state to another
+def BFS(matrix, start_location, end_location, dim, returnPath, isPrint): # Uses BFS to determine the shortest path from one state to another
     roundCounter = 0
     fringe = queue.Queue()
     closed = []
@@ -236,9 +246,14 @@ def BFS(matrix, start_location, end_location, dim): # Uses BFS to determine the 
                 current = current_state.state
             shortest_path.append(start_location)
             shortest_path.reverse()
-            print(roundCounter, "rounds of BFS were performed.")
-            #print("Shortest path is: " , shortest_path)
-            return shortest_path
+            if(isPrint): 
+                print(roundCounter, "rounds of BFS were performed.")
+            if(returnPath):
+                if(isPrint):
+                    print("Shortest path is: " , shortest_path)
+                return shortest_path
+            else:
+                return roundCounter
         else:
             i = current[0]
             j = current[1]
@@ -268,7 +283,10 @@ def BFS(matrix, start_location, end_location, dim): # Uses BFS to determine the 
                         inFringe.append([i,j-1])
             closed.append(current)  #puts current state in closed after generating valid children
     print("there lies no path to the goal node. " , roundCounter, " rounds of BFS were performed.")
-    return []
+    if(returnPath):
+        return []
+    else:
+        return roundCounter
 
 #Node class for every position. Contains the position, the straightLine path from the position to the goal node, and a reference to the previous position.
 class Node: 
@@ -278,7 +296,7 @@ class Node:
         self.distance = distance
         self.prev = prev
 
-def Astar2(matrix, start_location, end_location, dim) :
+def Astar2(matrix, start_location, end_location, dim, returnPath, isPrint) :
     roundCounter = 0
     fringe = []
     inFringe = [] 
@@ -299,9 +317,14 @@ def Astar2(matrix, start_location, end_location, dim) :
                 currentNode = currentNode.prev
             path.append(startNode.position)
             path.reverse()
-            #print(roundCounter, "rounds of A* were performed.")
-            #print("Shortest path is: " , path)
-            return path
+            if(isPrint):
+                print(roundCounter, "rounds of A* were performed.")
+            if(returnPath):
+                if(isPrint):
+                    print("Shortest path is: " , path)
+                return path
+            else:
+                return roundCounter
         else :
             if ((x+1) >= 0 and (x+1) < dim) :
                 if(matrix[x+1][y] == "O" or matrix[x+1][y] == "G"): #Ensures left position is not on fire.
@@ -336,9 +359,12 @@ def Astar2(matrix, start_location, end_location, dim) :
                         fringe = sortedInsert2(fringe, node) #Sorted insert based on euclidean heuristic.
                         inFringe.append([x,y-1])
         closed.append([currentNode.position[0], currentNode.position[1]]) #closes state.
-    #print("there lies no path to the goal node. " , roundCounter, " rounds of A* were performed.")
-    return []
-
+    if(isPrint):
+        print("there lies no path to the goal node. " , roundCounter, " rounds of A* were performed.")
+    if(returnPath):
+        return []
+    else:
+        return roundCounter
 
 
 def sortedInsert2(Alist, item) : #Helper function for Astar2. 
@@ -354,44 +380,46 @@ def euclideanDistance(start_point, end_point): #Function for euclidean metric he
     verticalDiff = math.sqrt((end_point[1] - start_point[1]) ** 2)
     return math.sqrt((verticalDiff**2) + (horizontalDiff**2))
 
+
+# MAIN: Uncomment one section of code at a time!
 if __name__ == "__main__" :
 
     dim = int(input("Enter Size dim: "))
-    p = float(input("Enter Probability (0 < p < 1) p: "))
-    maze = create_maze(dim, p)
-    #print_maze(maze, dim)
+    p = float(input("Enter Maze Probability (0 < p < 1) p: "))
+    q = float(input("Enter Firespread Probability (0 < q < 1) q: "))
+    wantsPrintS = input("Would you like to see the maze upon every step taken? (WARNING: DO NOT DO THIS FOR DATA COLLECTION!)\ny/n : ")
+    if(wantsPrintS == 'y'):
+        wantsPrint = True
+    elif(wantsPrintS == 'n'):
+        wantsPrint = False
+    else:
+        print("I'm sorry, I don't think I understand. I'll assume you do not want the visual graph because it is gross anyway. ", end="\n\n")
+        wantsPrint = False
+        
     
-    ######################TESTING Strat two and Three#########################
+
+    ########################### Strategy One Test ###################################
     """
-    index = 0
-    success = 0
-    while(index < 1000):
-        maze = create_maze(dim, p)
-        if(DFS(maze, [0,0], [dim-1,dim-1], dim) == True):
-            if(strategy_two(maze, dim, .3) == True):
-                success = success + 1
-            index = index + 1
-    print(success, "TWO")
-    
+    print("Strategy One")
+    print(strategy_one(maze, dim, q, wantsPrint))
     print()
-    
-    index = 0
-    success = 0
-    while(index < 1000):
-        maze = create_maze(dim, p)
-        if(DFS(maze, [0,0], [dim-1,dim-1], dim) == True):
-            if(strategy_three(maze, dim, .3) == True):
-                success = success + 1
-            index = index + 1
-    print(success, "THREE")
+
     """
- #########################Strategy three Code##############################
-    
+    ########################### Strategy Two Test ###################################
+    """
+    print("Strategy Two")
+    strategy_two(maze, dim, q, wantsPrint)
+    print()
+
+    """
+    ########################## Strategy Three Test ##################################
+    """
     print("Strategy Three")
-    print(strategy_three(maze, dim, .2))
+    print(strategy_three(maze, dim, q, wantsPrint))
     print()
     
- #########################test fire code####################################
+    """
+    ############################### Fire Test ########################################
     """
     start_fire(maze)
     print()
@@ -400,9 +428,9 @@ if __name__ == "__main__" :
     print_maze(maze, dim)
     #maze = advance_fire_one_step(maze, 1) #Check if advance_fire_one_step() function is working.
     #print_maze(maze, dim)
+    
     """
-
-    ########################## Data Collection Code ################################
+    ####################### Data Collection Code Qs 1-4 ################################
     """
     AstarRounds = 0
     BFSRounds = 0          
@@ -416,21 +444,65 @@ if __name__ == "__main__" :
         print()
         bfs_start_time = time.time()
         print("BFS: ")
-        BFSRounds = BFSRounds + BFS(maze, [0,0], [dim-1,dim-1], dim)
+        BFSRounds = BFSRounds + BFS(maze, [0,0], [dim-1,dim-1], dim, False, True)
         bfs_end_time = time.time()
         print("time taken: " , bfs_end_time - bfs_start_time , "seconds")
         print()
         astar_start_time = time.time()
         print("Astar: ")
-        AstarRounds = AstarRounds + Astar2(maze, [0,0], [dim-1, dim-1], dim)
+        AstarRounds = AstarRounds + Astar2(maze, [0,0], [dim-1, dim-1], dim, False, True)
         astar_end_time = time.time()
         print("time taken: ", astar_end_time - astar_start_time , "seconds.")
         print()
     averageDiff = (BFSRounds - AstarRounds) / rounds
     print()
-    print("Average difference of nodes explored between Astar and BFS: " , averageDiff)
+    print("Average difference of nodes explored between Astar and BFS: " , averageDiff, end="\n\n")
     
     """
-    ##############################################################################
+    ##################### Data Collection Code Qs 5-8 ##################################
+    #"""
+    rounds = int(input("Enter how many rounds of implementation you would like to perform: "))
+    print()
+    one_wins = 0
+    two_wins = 0
+    three_wins = 0
+    for i in range(0, rounds) :
+        maze = create_maze(dim, p)
+        maze = start_fire(maze)
+        print("ITERATION ROUND", i+1, end="\n\n")
+        isWin = strategy_one(maze, dim, q, wantsPrint)
+        if(isWin):
+            print("Strategy one has gotten the agent through the maze!", end="\n\n")
+            one_wins = one_wins + 1
+        else:
+            print("Strategy one has doomed the agent. :(", end="\n\n")
+        isWin = strategy_two(maze, dim, q, wantsPrint)
+        if(isWin):
+            print("Strategy two has gotten the agent through the maze!" , end="\n\n")
+            two_wins = two_wins + 1
+        else:
+            print("Strategy two has doomed the agent. :(", end="\n\n")
+        isWin = strategy_three(maze, dim, q, wantsPrint)
+        if(isWin):
+            print("Strategy three has gotten the agent through the maze!" , end="\n\n")
+            three_wins = three_wins + 1
+        else:
+            print("Strategy three has doomed the agent. :(", end="\n\n")
+    print()    
+        
+    one_success_rate = (one_wins / rounds) * 100
+    two_success_rate = (two_wins / rounds) * 100
+    three_success_rate = (three_wins / rounds) * 100
+    print("Average Success Rate of Strategy One: " , one_success_rate, "%" , end="\n\n")
+    print("Average Success Rate of Strategy Two: ", two_success_rate, "%" , end="\n\n")
+    print("Average Success Rate of Strategy Three: ", three_success_rate, "%", end="\n\n")
+    
+
+    #"""
+    #################################################################################
+
+
+
+
 
 
