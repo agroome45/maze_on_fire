@@ -98,7 +98,7 @@ def strategy_two(maze, dim, q):
         if(maze[currentPos[0]][currentPos[1]] == 'F'): #Agent has caught on fire.
             maze[currentPos[0]][currentPos[1]] = 'D'
             #print_maze(maze, dim)
-            print("Agent is on fire! :(")
+            #print("Agent is on fire! :(")
             return False
         if(path): #There still lies a path to the goal node.
             currentPos = path[1]
@@ -113,7 +113,7 @@ def strategy_two(maze, dim, q):
     #print("Agent has successfully reached the goal in ", stepCounter, "steps! :)")
     return True
         
-def strategy_three(maze, dim, q):
+def strategy_three(maze, dim, q): #tries to avoid positions that are reachable by the fire. Adjusts path when fire is reachable. Predicts
     maze = start_fire(maze)
     currentPos = [0,0]
     stepCounter = 0
@@ -129,21 +129,27 @@ def strategy_three(maze, dim, q):
         if(path): #There still lies a path to the goal node.
             currentPos = path[1]
             oldPos = path[0]
-            if(check_fire(currentPos, maze) == True):
+            if(check_fire(currentPos, maze) == True): # checks if the next current position is next to a fire
                 x = oldPos[0]
                 y = oldPos[1]
-                if((x-1) >= 0 and (x-1) < len(maze)): 
+                if((x-1) >= 0 and (x-1) < len(maze)): # Checks if the following state is in the maze range 
                     if(check_fire([x-1,y], maze) == False and maze[x-1][y] == "O" and DFS(maze,[x-1,y] ,[dim-1, dim-1] , dim)): 
-                        currentPos = [x-1,y]
-                if((y-1) >= 0 and (y-1) < len(maze) ): 
+                        #^ Checks if adjacent position is next to a fire, open, and reachable to the goal position
+                        currentPos = [x-1,y]# if so readjust current position
+                if((y-1) >= 0 and (y-1) < len(maze) ): # Checks if the following state is in the maze range 
                     if(check_fire([x,y-1], maze)== False and maze[x][y-1] == "O" and DFS(maze,[x,y-1] ,[dim-1, dim-1] , dim)):
-                        currentPos = [x,y-1]
-                if((y+1) >= 0 and (y+1) < len(maze)): 
+                        #^ Checks if adjacent position is next to a fire, open, and reachable to the goal position
+                        currentPos = [x,y-1]# if so readjust current position
+                if((y+1) >= 0 and (y+1) < len(maze)): # Checks if the following state is in the maze range 
+                    #(Since y+1 is closer to goal, it has more a priority to being the current position)
                     if(check_fire([x,y+1], maze) == False and maze[x][y+1] == "O" and DFS(maze,[x,y+1] ,[dim-1, dim-1] , dim)): 
-                        currentPos = [x,y+1]
-                if((x+1) >= 0 and (x+1) < len(maze)): 
+                        #^ Checks if adjacent position is next to a fire, open, and reachable to the goal position
+                        currentPos = [x,y+1]# if so readjust current position
+                if((x+1) >= 0 and (x+1) < len(maze)): # Checks if the following state is in the maze range 
                     if(check_fire([x+1,y], maze) == False and maze[x+1][y] == "O" and DFS(maze,[x+1,y] ,[dim-1, dim-1] , dim)): 
-                        currentPos = [x+1,y]
+                        #^ Checks if adjacent position is next to a fire, open, and reachable to the goal position
+                        currentPos = [x+1,y]# if so readjust current position
+                #if all adjacent positions are next to fire than use original current position
             stepCounter = stepCounter + 1
             maze[currentPos[0]][currentPos[1]] = 'A'
             print_maze(maze, dim)
@@ -355,8 +361,8 @@ if __name__ == "__main__" :
     maze = create_maze(dim, p)
     #print_maze(maze, dim)
     
-    ######################Strategy One Code#########################
-    
+    ######################TESTING Strat two and Three#########################
+    """
     index = 0
     success = 0
     while(index < 1000):
@@ -378,13 +384,13 @@ if __name__ == "__main__" :
                 success = success + 1
             index = index + 1
     print(success, "THREE")
-    
- #########################Strategy three Code##############################
     """
+ #########################Strategy three Code##############################
+    
     print("Strategy Three")
     print(strategy_three(maze, dim, .2))
     print()
-    """
+    
  #########################test fire code####################################
     """
     start_fire(maze)
