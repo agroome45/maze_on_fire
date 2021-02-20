@@ -14,16 +14,16 @@ def create_maze(dim,p): # creates a maze given dem and p
             rand = randint(0,100) # calculates the change a state is filled or empty 
             chance = p * 100 
             if(i == 0 and j == 0): # stating state at upper left corner
-                j = "S"
+                j = "S" # S = Starting state
             elif(i == (dim-1) and j == (dim-1)): # goal state at lower right corner
-                j = "G"
+                j = "G" # G = Goal state
             elif(rand >= chance):
-                j = "O"
+                j = "O"# O = Open state
             else:
-                j = "X"
+                j = "X"# X = Closed State
             c.append(j)
         maze.append(c)
-    return maze
+    return maze # returns a two dimensional array representing the maze
 
 def print_maze(maze,dim): #prints out the maze 
     for i in range(dim):
@@ -68,28 +68,28 @@ def advance_fire_one_step(maze, q): #advances fire once step using maze and prob
     return retMaze
 
 def strategy_one(maze, dim, q, isPrint):
-    path = search_algo.Astar2(maze, [0,0], [dim-1, dim-1], dim, True, False)
-    if(path == []):
+    path = search_algo.Astar2(maze, [0,0], [dim-1, dim-1], dim, True, False) # Generates the path the Agent will take from starting position to goal position
+    if(path == []): #If path returns empty, it means that there is no possible path from the stating position to the goal position
         return False
-    for i in range(len(path)):
-        Agent = path[i]
+    for i in range(len(path)):# loops through every position on the path
+        Agent = path[i] #sets current position to Agent
         x = Agent[0]
         y = Agent[1]
-        if(maze[x][y] == "F"):
+        if(maze[x][y] == "F"): # If agent is on Fire return false
             if(isPrint):
                 print("Step :", i)
                 print_maze(maze, dim) 
             return False
-        elif(maze[x][y] == "G"):
+        elif(maze[x][y] == "G"):# If agent reached the goal position return true
             if(isPrint):
                 print("Step :", i)
                 print_maze(maze, dim) 
             return True
-        maze[x][y] = "A"
+        maze[x][y] = "A" #Mark position to A (A = Agent Path)
         if(isPrint):
             print("Step :", i)
             print_maze(maze, dim) #Can remove if maze is to big 
-        maze = advance_fire_one_step(maze, q)
+        maze = advance_fire_one_step(maze, q)# advance fire and loop to next position on the path
         
 def strategy_two(maze, dim, q, isPrint):
     currentPos = [0,0]
@@ -121,7 +121,9 @@ def strategy_two(maze, dim, q, isPrint):
         print("Agent has successfully reached the goal in ", stepCounter, "steps! :)")
     return True
         
-def strategy_three(maze, dim, q, isPrint): #tries to avoid positions that are reachable by the fire. Adjusts path when fire is reachable. Predicts
+def TCA_strategy(maze, dim, q, isPrint): #tries to avoid positions that are reachable by the fire. Adjusts path when fire is reachable. 
+    #^Predicts that all positions touching fire will be on fire in the next step
+    #^ TSA = "The Cowardly Agent" Strategy because the Agent is cautious/afraid of the fire
     currentPos = [0,0]
     stepCounter = 0
     while (currentPos != [dim-1,dim-1]):
@@ -136,30 +138,31 @@ def strategy_three(maze, dim, q, isPrint): #tries to avoid positions that are re
                 print("Agent is on fire! :(")
             return False
         if(path): #There still lies a path to the goal node.
-            currentPos = path[1]
-            oldPos = path[0]
+            currentPos = path[1] # sets next position on the newly generated path to current position for now
+            oldPos = path[0] #Keep old position in case it needs to back track and find safer route
             if(check_fire(currentPos, maze) == True): # checks if the next current position is next to a fire
+                #If it is then checks the adjacent positions of the prior position (oldPos) for a safer route
                 x = oldPos[0]
                 y = oldPos[1]
                 if((x-1) >= 0 and (x-1) < len(maze)): # Checks if the following state is in the maze range 
-                    if(check_fire([x-1,y], maze) == False and maze[x-1][y] == "O" and DFS(maze,[x-1,y] ,[dim-1, dim-1] , dim)): 
+                    if(check_fire([x-1,y], maze) == False and maze[x-1][y] == "O" and search_algo.DFS(maze,[x-1,y] ,[dim-1, dim-1] , dim)): 
                         #^ Checks if adjacent position is next to a fire, open, and reachable to the goal position
-                        currentPos = [x-1,y]# if so readjust current position
+                        currentPos = [x-1,y]# if so re-adjust current position
                 if((y-1) >= 0 and (y-1) < len(maze) ): # Checks if the following state is in the maze range 
-                    if(check_fire([x,y-1], maze)== False and maze[x][y-1] == "O" and DFS(maze,[x,y-1] ,[dim-1, dim-1] , dim)):
+                    if(check_fire([x,y-1], maze)== False and maze[x][y-1] == "O" and search_algo.DFS(maze,[x,y-1] ,[dim-1, dim-1] , dim)):
                         #^ Checks if adjacent position is next to a fire, open, and reachable to the goal position
-                        currentPos = [x,y-1]# if so readjust current position
+                        currentPos = [x,y-1]# if so re-adjust current position
                 if((y+1) >= 0 and (y+1) < len(maze)): # Checks if the following state is in the maze range 
-                    if(check_fire([x,y+1], maze) == False and maze[x][y+1] == "O" and DFS(maze,[x,y+1] ,[dim-1, dim-1] , dim)): 
+                    if(check_fire([x,y+1], maze) == False and maze[x][y+1] == "O" and search_algo.DFS(maze,[x,y+1] ,[dim-1, dim-1] , dim)): 
                         #^ Checks if adjacent position is next to a fire, open, and reachable to the goal position
-                        currentPos = [x,y+1]# if so readjust current position
+                        currentPos = [x,y+1]# if so re-adjust current position
                 if((x+1) >= 0 and (x+1) < len(maze)): # Checks if the following state is in the maze range 
-                    if(check_fire([x+1,y], maze) == False and maze[x+1][y] == "O" and DFS(maze,[x+1,y] ,[dim-1, dim-1] , dim)): 
+                    if(check_fire([x+1,y], maze) == False and maze[x+1][y] == "O" and search_algo.DFS(maze,[x+1,y] ,[dim-1, dim-1] , dim)): 
                         #^ Checks if adjacent position is next to a fire, open, and reachable to the goal position
-                        currentPos = [x+1,y]# if so readjust current position
-                #if all adjacent positions are next to fire than use original current position
+                        currentPos = [x+1,y]# if so re-adjust current position
+                #if all adjacent positions are next to fire than use original current position and risk on being set on fire
             stepCounter = stepCounter + 1
-            maze[currentPos[0]][currentPos[1]] = 'A'
+            maze[currentPos[0]][currentPos[1]] = 'A' # Marks position as A to represent the agents path
             if(isPrint):
                 print_maze(maze, dim)
             maze = advance_fire_one_step(maze, q)
@@ -173,19 +176,19 @@ def strategy_three(maze, dim, q, isPrint): #tries to avoid positions that are re
     return True
 
 
-def check_fire(prosition, maze):
+def check_fire(prosition, maze): # Used to check if the neighbors of the given position is on fire
     x = prosition[0]
     y = prosition[1]
-    if((x+1) >= 0 and (x+1) < len(maze)): 
+    if((x+1) >= 0 and (x+1) < len(maze)): # Checks if the following state is in the maze range 
         if(maze[x+1][y] == 'F'): 
             return True
-    if((x-1) >= 0 and (x-1) < len(maze)): 
+    if((x-1) >= 0 and (x-1) < len(maze)): # Checks if the following state is in the maze range 
         if(maze[x-1][y] == 'F'): 
             return True
-    if((y+1) >= 0 and (y+1) < len(maze)): 
+    if((y+1) >= 0 and (y+1) < len(maze)): # Checks if the following state is in the maze range 
         if(maze[x][y+1] == 'F'): 
             return True
-    if((y-1) >= 0 and (y-1) < len(maze)): 
+    if((y-1) >= 0 and (y-1) < len(maze)): # Checks if the following state is in the maze range 
         if(maze[x][y-1] == 'F'): 
             return True
     return False
@@ -216,8 +219,8 @@ if __name__ == "__main__" :
     print("Strategy One")
     print(strategy_one(maze, dim, q, wantsPrint))
     print()
-
     """
+    
     ########################### Strategy Two Test ###################################
     """
     maze = create_maze(dim, p)
@@ -232,7 +235,7 @@ if __name__ == "__main__" :
     maze = create_maze(dim, p)
     maze = start_fire(maze)
     print("Strategy Three")
-    print(strategy_three(maze, dim, q, wantsPrint))
+    print(TCA_strategy(maze, dim, q, wantsPrint))
     print()
     
     """
@@ -308,7 +311,7 @@ if __name__ == "__main__" :
                 two_wins = two_wins + 1
             else:
                 print("Strategy two has doomed the agent. :(", end="\n\n")
-            isWin = strategy_three(maze_3, dim, q, wantsPrint)
+            isWin = TCA_strategy(maze_3, dim, q, wantsPrint)
             if(isWin):
                 print("Strategy three has gotten the agent through the maze!" , end="\n\n")
                 three_wins = three_wins + 1

@@ -6,14 +6,14 @@ import copy
 from random import randint
 
 def DFS(matrix, start_location, end_location, dim): # Uses DFS to determine if one state is reachable from another
-    fringe = []
-    closed = []
+    fringe = []# fringe is a stack since its DFS (First in, last out)
+    closed = []# Holds the closed states
     fringe.append(start_location)
     while(len(fringe) != 0):
         #print(fringe, "fringe") #prints fringe (NOT NEEDED)
         current = fringe.pop()  #Pops state from fringe and makes current
         #print(current, "current") #prints current state (NOT NEEDED)
-        if(current == end_location):
+        if(current == end_location): # if end position is found
             return True
         else:
             i = current[0]
@@ -22,45 +22,45 @@ def DFS(matrix, start_location, end_location, dim): # Uses DFS to determine if o
                 if(matrix[i+1][j] == "O" or matrix[i+1][j] == "G"):  #checks is the following state is a open or goal state
                     if(closed.count([i+1,j]) == 0 and fringe.count([i+1,j]) == 0): #checks if the following state isn't already closed or in the fringe
                         fringe.append([i+1,j])
-            if((i - 1) >=0 and (i - 1) < dim):
-                if(matrix[i-1][j] == "O" or matrix[i-1][j] == "G" ):
-                    if(closed.count([i-1,j]) == 0 and fringe.count([i-1,j]) == 0):
+            if((i - 1) >=0 and (i - 1) < dim): # Checks if the following state is in the maze range  
+                if(matrix[i-1][j] == "O" or matrix[i-1][j] == "G" ):#checks is the following state is a open or goal state
+                    if(closed.count([i-1,j]) == 0 and fringe.count([i-1,j]) == 0): #checks if the following state isn't already closed or in the fringe
                         fringe.append([i-1,j])
-            if((j + 1) >=0 and (j + 1) < dim):
-                if(matrix[i][j+1] == "O" or matrix[i][j+1] == "G"):
-                    if(closed.count([i,j+1]) == 0 and fringe.count([i,j+1]) == 0):
+            if((j + 1) >=0 and (j + 1) < dim):# Checks if the following state is in the maze range  
+                if(matrix[i][j+1] == "O" or matrix[i][j+1] == "G"):#checks is the following state is a open or goal state
+                    if(closed.count([i,j+1]) == 0 and fringe.count([i,j+1]) == 0): #checks if the following state isn't already closed or in the fringe
                         fringe.append([i,j+1])  
-            if((j - 1) >= 0 and (j - 1) < dim):
-                if(matrix[i][j-1] == "O" or matrix[i][j-1] == "G"):
-                    if(closed.count([i,j-1]) == 0 and fringe.count([i,j-1]) == 0):
+            if((j - 1) >= 0 and (j - 1) < dim):# Checks if the following state is in the maze range  
+                if(matrix[i][j-1] == "O" or matrix[i][j-1] == "G"):#checks is the following state is a open or goal state
+                    if(closed.count([i,j-1]) == 0 and fringe.count([i,j-1]) == 0): #checks if the following state isn't already closed or in the fringe
                         fringe.append([i,j-1])
             closed.append(current)  #puts current state in closed after generating valid children
-    return False
+    return False #If the two positions are not reachable
 
-class BFS_state:
+class BFS_state:# hold the current state and the previous state
     def __init__(self, state, prev):
-        self.state = state
-        self.prev = prev
+        self.state = state #current state
+        self.prev = prev #previous states
 
 def BFS(matrix, start_location, end_location, dim, returnPath, isPrint): # Uses BFS to determine the shortest path from one state to another
     roundCounter = 0
-    fringe = queue.Queue()
-    closed = []
-    shortest_path = []
-    inFringe = []
+    fringe = queue.Queue() #Fringe is a queue since its BFS (first come first out)
+    closed = [] # holds the closed states
+    shortest_path = [] # holds the current shortest path
+    inFringe = []# holds the states that currently in the fringe
     start_state = BFS_state(start_location, 0)
     fringe.put(start_state)
-    while(fringe.empty() == False):
+    while(fringe.empty() == False): # loops while fringe isn't empty
         roundCounter = roundCounter + 1
         current_state = fringe.get()  #Pops state from fringe and makes current
         current = current_state.state
-        if(current == end_location):
+        if(current == end_location): #if the end location is found on the fringe
             while(current != start_location):#Traces back through nodes to construct path
                 shortest_path.append(current)
-                current_state = current_state.prev
+                current_state = current_state.prev # uses the BFS_state class to look for the previous state 
                 current = current_state.state
             shortest_path.append(start_location)
-            shortest_path.reverse()
+            shortest_path.reverse() # reverses the path to make it go in correct order
             if(isPrint): 
                 print(roundCounter, "rounds of BFS were performed.")
             if(returnPath):
@@ -75,25 +75,25 @@ def BFS(matrix, start_location, end_location, dim, returnPath, isPrint): # Uses 
             if((i + 1) >= 0 and (i + 1) < dim ):   # Checks if the following state is in the maze range   
                 if(matrix[i+1][j] == "O" or matrix[i+1][j] == "G"):  #checks is the following state is a open or goal state
                     if(closed.count([i+1,j]) == 0 and inFringe.count([i+1,j]) == 0 ): #checks if the following state isn't already closed or in the fringe
-                        new_state = BFS_state([i+1,j], current_state)
+                        new_state = BFS_state([i+1,j], current_state)# creates a new BFS_state and adds it the fringe
                         fringe.put(new_state)
                         inFringe.append([i+1,j])
-            if((i - 1) >=0 and (i - 1) < dim):
-                if(matrix[i-1][j] == "O" or matrix[i-1][j] == "G" ):
-                    if(closed.count([i-1,j]) == 0 and inFringe.count([i-1,j]) == 0 ):
-                        new_state = BFS_state([i-1,j], current_state)
+            if((i - 1) >=0 and (i - 1) < dim):# Checks if the following state is in the maze range 
+                if(matrix[i-1][j] == "O" or matrix[i-1][j] == "G" ):#checks is the following state is a open or goal state
+                    if(closed.count([i-1,j]) == 0 and inFringe.count([i-1,j]) == 0 ):#checks if the following state isn't already closed or in the fringe
+                        new_state = BFS_state([i-1,j], current_state) # creates a new BFS_state and adds it the fringe
                         fringe.put(new_state)
                         inFringe.append([i-1,j])
-            if((j + 1) >=0 and (j + 1) < dim):
-                if(matrix[i][j+1] == "O" or matrix[i][j+1] == "G"):
-                    if(closed.count([i,j+1]) == 0 and inFringe.count([i,j+1]) == 0  ):
-                        new_state = BFS_state([i,j+1], current_state)
+            if((j + 1) >=0 and (j + 1) < dim):# Checks if the following state is in the maze range 
+                if(matrix[i][j+1] == "O" or matrix[i][j+1] == "G"):#checks is the following state is a open or goal state
+                    if(closed.count([i,j+1]) == 0 and inFringe.count([i,j+1]) == 0  ):#checks if the following state isn't already closed or in the fringe
+                        new_state = BFS_state([i,j+1], current_state)# creates a new BFS_state and adds it the fringe
                         fringe.put(new_state)
                         inFringe.append([i,j+1]) 
-            if((j - 1) >= 0 and (j - 1) < dim):
-                if(matrix[i][j-1] == "O" or matrix[i][j-1] == "G"):
-                    if(closed.count([i,j-1]) == 0 and inFringe.count([i,j-1]) == 0):
-                        new_state = BFS_state([i,j-1], current_state)
+            if((j - 1) >= 0 and (j - 1) < dim):# Checks if the following state is in the maze range 
+                if(matrix[i][j-1] == "O" or matrix[i][j-1] == "G"):#checks is the following state is a open or goal state
+                    if(closed.count([i,j-1]) == 0 and inFringe.count([i,j-1]) == 0):#checks if the following state isn't already closed or in the fringe
+                        new_state = BFS_state([i,j-1], current_state)# creates a new BFS_state and adds it the fringe
                         fringe.put(new_state)
                         inFringe.append([i,j-1])
             closed.append(current)  #puts current state in closed after generating valid children
